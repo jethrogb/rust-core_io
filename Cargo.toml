@@ -2,5 +2,7 @@
 name = "core_io"
 version = "0.0.20160707"
 authors = ["Jethro Beekman <jethro@jbeekman.nl>"]
+build = "build.rs"
 
-[dependencies]
+[build-dependencies]
+rustc_version = "0.1.7"

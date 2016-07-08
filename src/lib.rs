@@ -7,5 +7,5 @@ extern crate collections;
 extern crate alloc;
 extern crate rustc_unicode;
 
-mod io;
+include!(concat!(env!("OUT_DIR"), "/io.rs"));
 pub use io::*;
