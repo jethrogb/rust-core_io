@@ -1,0 +1,6 @@
+[package]
+name = "core_io"
+version = "0.0.20160707"
+authors = ["Jethro Beekman <jethro@jbeekman.nl>"]
+
+[dependencies]
