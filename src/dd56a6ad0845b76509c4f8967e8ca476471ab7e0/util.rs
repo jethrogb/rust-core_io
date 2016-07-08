@@ -42,7 +42,6 @@ use io::{self, Read, Write, ErrorKind, BufRead};
 /// # Ok(())
 /// # }
 /// ```
-#[stable(feature = "rust1", since = "1.0.0")]
 pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> io::Result<u64>
     where R: Read, W: Write
 {
@@ -66,7 +65,6 @@ pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> io::Result<
 /// the documentation of `empty()` for more details.
 ///
 /// [empty]: fn.empty.html
-#[stable(feature = "rust1", since = "1.0.0")]
 pub struct Empty { _priv: () }
 
 /// Constructs a new handle to an empty reader.
@@ -84,14 +82,11 @@ pub struct Empty { _priv: () }
 /// io::empty().read_to_string(&mut buffer).unwrap();
 /// assert!(buffer.is_empty());
 /// ```
-#[stable(feature = "rust1", since = "1.0.0")]
 pub fn empty() -> Empty { Empty { _priv: () } }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl Read for Empty {
     fn read(&mut self, _buf: &mut [u8]) -> io::Result<usize> { Ok(0) }
 }
-#[stable(feature = "rust1", since = "1.0.0")]
 impl BufRead for Empty {
     fn fill_buf(&mut self) -> io::Result<&[u8]> { Ok(&[]) }
     fn consume(&mut self, _n: usize) {}
@@ -103,7 +98,6 @@ impl BufRead for Empty {
 /// see the documentation of `repeat()` for more details.
 ///
 /// [repeat]: fn.repeat.html
-#[stable(feature = "rust1", since = "1.0.0")]
 pub struct Repeat { byte: u8 }
 
 /// Creates an instance of a reader that infinitely repeats one byte.
@@ -120,10 +114,8 @@ pub struct Repeat { byte: u8 }
 /// io::repeat(0b101).read_exact(&mut buffer).unwrap();
 /// assert_eq!(buffer, [0b101, 0b101, 0b101]);
 /// ```
-#[stable(feature = "rust1", since = "1.0.0")]
 pub fn repeat(byte: u8) -> Repeat { Repeat { byte: byte } }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl Read for Repeat {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         for slot in &mut *buf {
@@ -139,7 +131,6 @@ impl Read for Repeat {
 /// see the documentation of `sink()` for more details.
 ///
 /// [sink]: fn.sink.html
-#[stable(feature = "rust1", since = "1.0.0")]
 pub struct Sink { _priv: () }
 
 /// Creates an instance of a writer which will successfully consume all data.
@@ -156,10 +147,8 @@ pub struct Sink { _priv: () }
 /// let num_bytes = io::sink().write(&mut buffer).unwrap();
 /// assert_eq!(num_bytes, 5);
 /// ```
-#[stable(feature = "rust1", since = "1.0.0")]
 pub fn sink() -> Sink { Sink { _priv: () } }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl Write for Sink {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> { Ok(buf.len()) }
     fn flush(&mut self) -> io::Result<()> { Ok(()) }

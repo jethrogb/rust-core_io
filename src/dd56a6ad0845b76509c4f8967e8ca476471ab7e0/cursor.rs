@@ -8,10 +8,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use prelude::v1::*;
+use core::prelude::v1::*;
 use io::prelude::*;
 
-use cmp;
+use core::cmp;
 use io::{self, SeekFrom, Error, ErrorKind};
 
 /// A `Cursor` wraps another type and provides it with a
@@ -73,7 +73,6 @@ use io::{self, SeekFrom, Error, ErrorKind};
 ///     assert_eq!(&buff.get_ref()[5..15], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 /// }
 /// ```
-#[stable(feature = "rust1", since = "1.0.0")]
 #[derive(Clone, Debug)]
 pub struct Cursor<T> {
     inner: T,
@@ -92,7 +91,6 @@ impl<T> Cursor<T> {
     /// # fn force_inference(_: &Cursor<Vec<u8>>) {}
     /// # force_inference(&buff);
     /// ```
-    #[stable(feature = "rust1", since = "1.0.0")]
     pub fn new(inner: T) -> Cursor<T> {
         Cursor { pos: 0, inner: inner }
     }
@@ -110,7 +108,6 @@ impl<T> Cursor<T> {
     ///
     /// let vec = buff.into_inner();
     /// ```
-    #[stable(feature = "rust1", since = "1.0.0")]
     pub fn into_inner(self) -> T { self.inner }
 
     /// Gets a reference to the underlying value in this cursor.
@@ -126,7 +123,6 @@ impl<T> Cursor<T> {
     ///
     /// let reference = buff.get_ref();
     /// ```
-    #[stable(feature = "rust1", since = "1.0.0")]
     pub fn get_ref(&self) -> &T { &self.inner }
 
     /// Gets a mutable reference to the underlying value in this cursor.
@@ -145,7 +141,6 @@ impl<T> Cursor<T> {
     ///
     /// let reference = buff.get_mut();
     /// ```
-    #[stable(feature = "rust1", since = "1.0.0")]
     pub fn get_mut(&mut self) -> &mut T { &mut self.inner }
 
     /// Returns the current position of this cursor.
@@ -167,7 +162,6 @@ impl<T> Cursor<T> {
     /// buff.seek(SeekFrom::Current(-1)).unwrap();
     /// assert_eq!(buff.position(), 1);
     /// ```
-    #[stable(feature = "rust1", since = "1.0.0")]
     pub fn position(&self) -> u64 { self.pos }
 
     /// Sets the position of this cursor.
@@ -187,11 +181,9 @@ impl<T> Cursor<T> {
     /// buff.set_position(4);
     /// assert_eq!(buff.position(), 4);
     /// ```
-    #[stable(feature = "rust1", since = "1.0.0")]
     pub fn set_position(&mut self, pos: u64) { self.pos = pos; }
 }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
     fn seek(&mut self, style: SeekFrom) -> io::Result<u64> {
         let pos = match style {
@@ -210,7 +202,6 @@ impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
     }
 }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let n = Read::read(&mut self.fill_buf()?, buf)?;
@@ -219,7 +210,6 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
     }
 }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
     fn fill_buf(&mut self) -> io::Result<&[u8]> {
         let amt = cmp::min(self.pos, self.inner.as_ref().len() as u64);
@@ -228,7 +218,6 @@ impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
     fn consume(&mut self, amt: usize) { self.pos += amt as u64; }
 }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl<'a> Write for Cursor<&'a mut [u8]> {
     #[inline]
     fn write(&mut self, data: &[u8]) -> io::Result<usize> {
@@ -240,7 +229,6 @@ impl<'a> Write for Cursor<&'a mut [u8]> {
     fn flush(&mut self) -> io::Result<()> { Ok(()) }
 }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl Write for Cursor<Vec<u8>> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         // Make sure the internal buffer is as least as big as where we
@@ -268,7 +256,6 @@ impl Write for Cursor<Vec<u8>> {
     fn flush(&mut self) -> io::Result<()> { Ok(()) }
 }
 
-#[stable(feature = "cursor_box_slice", since = "1.5.0")]
 impl Write for Cursor<Box<[u8]>> {
     #[inline]
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
