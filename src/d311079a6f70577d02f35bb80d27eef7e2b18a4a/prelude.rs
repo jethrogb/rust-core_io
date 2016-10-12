@@ -18,7 +18,8 @@
 //! use std::io::prelude::*;
 //! ```
 
-#![stable(feature = "rust1", since = "1.0.0")]
+pub use super::{Read, Write, Seek};
+#[cfg(feature="collections")] pub use super::BufRead;
 
-#[stable(feature = "rust1", since = "1.0.0")]
-pub use super::{Read, Write, BufRead, Seek};
+#[cfg(feature="collections")] pub use alloc::boxed::Box;
+#[cfg(feature="collections")] pub use collections::vec::Vec;
