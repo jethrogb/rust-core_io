@@ -36,10 +36,16 @@ impl Sub<Mapping> for Vec<Mapping> {
 }
 
 fn main() {
-	let mappings=include!("mapping.rs");
-	
-	let compiler=rustc_version::version_meta().commit_hash.expect("Couldn't determine compiler version");
-	let io_commit=mappings.iter().find(|&&Mapping(elem,_)|elem==compiler).expect("Unknown compiler version, upgrade core_io?").1;
+	let io_commit=match env::var("CORE_IO_COMMIT") {
+		Ok(c) => c,
+		Err(env::VarError::NotUnicode(_)) => panic!("Invalid commit specified in CORE_IO_COMMIT"),
+		Err(env::VarError::NotPresent) => {
+			let mappings=include!("mapping.rs");
+			
+			let compiler=rustc_version::version_meta().commit_hash.expect("Couldn't determine compiler version");
+			mappings.iter().find(|&&Mapping(elem,_)|elem==compiler).expect("Unknown compiler version, upgrade core_io?").1.to_owned()
+		}
+	};
 	
 	let mut dest_path=PathBuf::from(env::var_os("OUT_DIR").unwrap());
 	dest_path.push("io.rs");
