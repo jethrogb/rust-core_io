@@ -11,103 +11,12 @@
 // Original implementation taken from rust-memchr
 // Copyright 2015 Andrew Gallant, bluss and Nicolas Koch
 
-
-
-/// A safe interface to `memchr`.
-///
-/// Returns the index corresponding to the first occurrence of `needle` in
-/// `haystack`, or `None` if one is not found.
-///
-/// memchr reduces to super-optimized machine code at around an order of
-/// magnitude faster than `haystack.iter().position(|&b| b == needle)`.
-/// (See benchmarks.)
-///
-/// # Example
-///
-/// This shows how to find the first position of a byte in a byte string.
-///
-/// ```rust,ignore
-/// use memchr::memchr;
-///
-/// let haystack = b"the quick brown fox";
-/// assert_eq!(memchr(b'k', haystack), Some(8));
-/// ```
-pub fn memchr(needle: u8, haystack: &[u8]) -> Option<usize> {
-    // libc memchr
-    #[cfg(not(target_os = "windows"))]
-    fn memchr_specific(needle: u8, haystack: &[u8]) -> Option<usize> {
-        use libc;
-
-        let p = unsafe {
-            libc::memchr(
-                haystack.as_ptr() as *const libc::c_void,
-                needle as libc::c_int,
-                haystack.len() as libc::size_t)
-        };
-        if p.is_null() {
-            None
-        } else {
-            Some(p as usize - (haystack.as_ptr() as usize))
-        }
-    }
-
-    // use fallback on windows, since it's faster
-    #[cfg(target_os = "windows")]
-    fn memchr_specific(needle: u8, haystack: &[u8]) -> Option<usize> {
-        fallback::memchr(needle, haystack)
-    }
-
-    memchr_specific(needle, haystack)
-}
-
-/// A safe interface to `memrchr`.
-///
-/// Returns the index corresponding to the last occurrence of `needle` in
-/// `haystack`, or `None` if one is not found.
-///
-/// # Example
-///
-/// This shows how to find the last position of a byte in a byte string.
-///
-/// ```rust,ignore
-/// use memchr::memrchr;
-///
-/// let haystack = b"the quick brown fox";
-/// assert_eq!(memrchr(b'o', haystack), Some(17));
-/// ```
-pub fn memrchr(needle: u8, haystack: &[u8]) -> Option<usize> {
-
-    #[cfg(target_os = "linux")]
-    fn memrchr_specific(needle: u8, haystack: &[u8]) -> Option<usize> {
-        use libc;
-
-        // GNU's memrchr() will - unlike memchr() - error if haystack is empty.
-        if haystack.is_empty() {return None}
-        let p = unsafe {
-            libc::memrchr(
-                haystack.as_ptr() as *const libc::c_void,
-                needle as libc::c_int,
-                haystack.len() as libc::size_t)
-        };
-        if p.is_null() {
-            None
-        } else {
-            Some(p as usize - (haystack.as_ptr() as usize))
-        }
-    }
-
-    #[cfg(not(target_os = "linux"))]
-    fn memrchr_specific(needle: u8, haystack: &[u8]) -> Option<usize> {
-        fallback::memrchr(needle, haystack)
-    }
-
-    memrchr_specific(needle, haystack)
-}
+pub use self::fallback::{memchr,memrchr};
 
 #[allow(dead_code)]
 mod fallback {
-    use cmp;
-    use mem;
+    use core::cmp;
+    use core::mem;
 
     const LO_U64: u64 = 0x0101010101010101;
     const HI_U64: u64 = 0x8080808080808080;
