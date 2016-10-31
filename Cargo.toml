@@ -14,6 +14,13 @@ selected automatically by the build script.
 repository = "https://github.com/jethrogb/rust-core_io"
 documentation = "https://doc.rust-lang.org/nightly/std/io/index.html"
 keywords = ["core", "no_std", "io", "read", "write"]
+include = [
+	"build.rs",
+	"Cargo.toml",
+	"LICENSE-*",
+	"mapping.rs",
+	"src/**/*.rs",
+]
 
 build = "build.rs"
 
