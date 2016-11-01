@@ -367,11 +367,12 @@ index 420fede..670e362 100644
  impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
      fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
          let n = try!(Read::read(&mut try!(self.fill_buf()), buf));
-@@ -219,7 +210,6 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
+@@ -219,7 +210,7 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
      }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature = "collections")]
  impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
      fn fill_buf(&mut self) -> io::Result<&[u8]> {
          let amt = cmp::min(self.pos, self.inner.as_ref().len() as u64);
@@ -383,19 +384,21 @@ index 420fede..670e362 100644
  impl<'a> Write for Cursor<&'a mut [u8]> {
      fn write(&mut self, data: &[u8]) -> io::Result<usize> {
          let pos = cmp::min(self.pos, self.inner.len() as u64);
-@@ -239,7 +228,6 @@ impl<'a> Write for Cursor<&'a mut [u8]> {
+@@ -239,7 +228,7 @@ impl<'a> Write for Cursor<&'a mut [u8]> {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
  impl Write for Cursor<Vec<u8>> {
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
          // Make sure the internal buffer is as least as big as where we
-@@ -267,7 +255,6 @@ impl Write for Cursor<Vec<u8>> {
+@@ -267,7 +255,7 @@ impl Write for Cursor<Vec<u8>> {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  
 -#[stable(feature = "cursor_box_slice", since = "1.5.0")]
++#[cfg(feature="alloc")]
  impl Write for Cursor<Box<[u8]>> {
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
          let pos = cmp::min(self.pos, self.inner.len() as u64);
@@ -1038,7 +1041,7 @@ index 61334f3..9d9263f 100644
 -mod buffered;
 -mod cursor;
 +#[cfg(feature="collections")] mod buffered;
-+#[cfg(feature="collections")] mod cursor;
++mod cursor;
  mod error;
  mod impls;
 -mod lazy;
