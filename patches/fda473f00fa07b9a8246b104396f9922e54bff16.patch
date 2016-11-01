@@ -359,14 +359,21 @@ index 2d78055..1db50ee 100644
  impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
      fn seek(&mut self, style: SeekFrom) -> io::Result<u64> {
          let pos = match style {
-@@ -210,7 +202,6 @@ impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
+@@ -210,12 +202,11 @@
      }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
  impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
      fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-         let n = Read::read(&mut self.fill_buf()?, buf)?;
+-        let n = Read::read(&mut self.fill_buf()?, buf)?;
+-        self.pos += n as u64;
+-        Ok(n)
++        let amt = cmp::min(self.pos, self.inner.as_ref().len() as u64);
++        self.pos += amt as u64;
++        Ok(&self.inner.as_ref()[(amt as usize)..])
+     }
+ }
 @@ -219,7 +210,7 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
      }
  }
