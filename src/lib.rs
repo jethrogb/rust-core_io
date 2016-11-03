@@ -3,7 +3,7 @@
 //! the [std documentation](https://doc.rust-lang.org/nightly/std/io/index.html)
 //! for a full description of the functionality.
 #![allow(stable_features,unused_features)]
-#![feature(question_mark,const_fn,collections,alloc,unicode,copy_from_slice,str_char)]
+#![feature(question_mark,const_fn,collections,alloc,unicode,copy_from_slice,str_char,try_from)]
 #![no_std]
 
 #[cfg_attr(feature="collections",macro_use)]

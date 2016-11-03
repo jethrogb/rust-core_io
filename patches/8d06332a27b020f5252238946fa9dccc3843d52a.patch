@@ -282,7 +282,7 @@ index 93b2d34..47282c9 100644
      fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
          fmt.debug_struct("LineWriter")
 diff --git a/cursor.rs b/cursor.rs
-index ae0085f..5392880 100644
+index ae0085f..0f8029d 100644
 --- a/cursor.rs
 +++ b/cursor.rs
 @@ -8,10 +8,11 @@
@@ -292,8 +292,9 @@ index ae0085f..5392880 100644
 +use core::prelude::v1::*;
  use io::prelude::*;
  
- use core::convert::TryInto;
+-use core::convert::TryInto;
 -use cmp;
++#[cfg(feature = "collections")] use core::convert::TryInto;
 +use core::cmp;
  use io::{self, SeekFrom, Error, ErrorKind};
  
@@ -358,23 +359,33 @@ index ae0085f..5392880 100644
  impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
      fn seek(&mut self, style: SeekFrom) -> io::Result<u64> {
          let pos = match style {
-@@ -210,7 +203,6 @@ impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
+@@ -210,25 +203,27 @@ impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
      }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
  impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
      fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-         let n = Read::read(&mut self.fill_buf()?, buf)?;
-@@ -219,7 +211,6 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
+-        let n = Read::read(&mut self.fill_buf()?, buf)?;
++        let n = Read::read(&mut self.get_buf()?, buf)?;
+         self.pos += n as u64;
+         Ok(n)
      }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
- impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
-     fn fill_buf(&mut self) -> io::Result<&[u8]> {
+-impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
+-    fn fill_buf(&mut self) -> io::Result<&[u8]> {
++impl<T> Cursor<T> where T: AsRef<[u8]> {
++    fn get_buf(&mut self) -> io::Result<&[u8]> {
          let amt = cmp::min(self.pos, self.inner.as_ref().len() as u64);
-@@ -228,7 +219,6 @@ impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
+         Ok(&self.inner.as_ref()[(amt as usize)..])
+     }
++}
++
++#[cfg(feature = "collections")]
++impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
++    fn fill_buf(&mut self) -> io::Result<&[u8]> { self.get_buf() }
      fn consume(&mut self, amt: usize) { self.pos += amt as u64; }
  }
  
@@ -382,22 +393,26 @@ index ae0085f..5392880 100644
  impl<'a> Write for Cursor<&'a mut [u8]> {
      #[inline]
      fn write(&mut self, data: &[u8]) -> io::Result<usize> {
-@@ -240,7 +230,6 @@ impl<'a> Write for Cursor<&'a mut [u8]> {
+@@ -240,7 +235,7 @@ impl<'a> Write for Cursor<&'a mut [u8]> {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature = "collections")]
  impl Write for Cursor<Vec<u8>> {
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
          let pos: usize = self.position().try_into().map_err(|_| {
-@@ -270,7 +259,6 @@ impl Write for Cursor<Vec<u8>> {
+@@ -270,8 +265,8 @@ impl Write for Cursor<Vec<u8>> {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  
 -#[stable(feature = "cursor_box_slice", since = "1.5.0")]
- impl Write for Cursor<Box<[u8]>> {
+-impl Write for Cursor<Box<[u8]>> {
++#[cfg(feature = "alloc")]
++impl Write for Cursor<::alloc::boxed::Box<[u8]>> {
      #[inline]
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+         let pos = cmp::min(self.pos, self.inner.len() as u64);
 diff --git a/error.rs b/error.rs
 index ddf0030..748b830 100644
 --- a/error.rs
@@ -883,7 +898,7 @@ index 3824a5f..312cf47 100644
      const LO_U64: u64 = 0x0101010101010101;
      const HI_U64: u64 = 0x8080808080808080;
 diff --git a/mod.rs b/mod.rs
-index 7310564..05d91fc 100644
+index 7310564..0fafc60 100644
 --- a/mod.rs
 +++ b/mod.rs
 @@ -247,42 +247,32 @@
@@ -906,8 +921,6 @@ index 7310564..05d91fc 100644
 -#[stable(feature = "rust1", since = "1.0.0")]
 -pub use self::buffered::IntoInnerError;
 -#[stable(feature = "rust1", since = "1.0.0")]
--pub use self::cursor::Cursor;
--#[stable(feature = "rust1", since = "1.0.0")]
 +use core::fmt;
 +use core::iter::{Iterator};
 +use core::marker::Sized;
@@ -922,7 +935,8 @@ index 7310564..05d91fc 100644
 +
 +#[cfg(feature="collections")] pub use self::buffered::{BufReader, BufWriter, LineWriter};
 +#[cfg(feature="collections")] pub use self::buffered::IntoInnerError;
-+#[cfg(feature="collections")] pub use self::cursor::Cursor;
+ pub use self::cursor::Cursor;
+-#[stable(feature = "rust1", since = "1.0.0")]
  pub use self::error::{Result, Error, ErrorKind};
 -#[stable(feature = "rust1", since = "1.0.0")]
  pub use self::util::{copy, sink, Sink, empty, Empty, repeat, Repeat};
@@ -936,9 +950,8 @@ index 7310564..05d91fc 100644
  
  pub mod prelude;
 -mod buffered;
--mod cursor;
 +#[cfg(feature="collections")] mod buffered;
-+#[cfg(feature="collections")] mod cursor;
+ mod cursor;
  mod error;
  mod impls;
 -mod lazy;
