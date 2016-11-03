@@ -359,19 +359,27 @@ index 2d78055..1db50ee 100644
  impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
      fn seek(&mut self, style: SeekFrom) -> io::Result<u64> {
          let pos = match style {
-@@ -210,7 +202,6 @@ impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
+@@ -210,11 +202,10 @@
      }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
  impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
      fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-         let n = Read::read(&mut self.fill_buf()?, buf)?;
-@@ -219,7 +210,6 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
+-        let n = Read::read(&mut self.fill_buf()?, buf)?;
+-        self.pos += n as u64;
+-        Ok(n)
++        let amt = cmp::min(self.pos, self.inner.as_ref().len() as u64);
++        self.pos += amt as u64;
++        Ok(&self.inner.as_ref()[(amt as usize)..])
+     }
+ }
+@@ -219,7 +210,7 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
      }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature = "collections")]
  impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
      fn fill_buf(&mut self) -> io::Result<&[u8]> {
          let amt = cmp::min(self.pos, self.inner.as_ref().len() as u64);
@@ -383,19 +391,21 @@ index 2d78055..1db50ee 100644
  impl<'a> Write for Cursor<&'a mut [u8]> {
      #[inline]
      fn write(&mut self, data: &[u8]) -> io::Result<usize> {
-@@ -240,7 +229,6 @@ impl<'a> Write for Cursor<&'a mut [u8]> {
+@@ -240,7 +229,7 @@ impl<'a> Write for Cursor<&'a mut [u8]> {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
  impl Write for Cursor<Vec<u8>> {
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
          // Make sure the internal buffer is as least as big as where we
-@@ -268,7 +256,6 @@ impl Write for Cursor<Vec<u8>> {
+@@ -268,7 +256,7 @@ impl Write for Cursor<Vec<u8>> {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  
 -#[stable(feature = "cursor_box_slice", since = "1.5.0")]
++#[cfg(feature="alloc")]
  impl Write for Cursor<Box<[u8]>> {
      #[inline]
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
@@ -1044,7 +1054,7 @@ index 88fd418..94508d2 100644
 -mod buffered;
 -mod cursor;
 +#[cfg(feature="collections")] mod buffered;
-+#[cfg(feature="collections")] mod cursor;
++mod cursor;
  mod error;
  mod impls;
 -mod lazy;
