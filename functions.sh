@@ -10,10 +10,10 @@ git_extract() {
 }
 
 git_commits_ordered() {
-	format=$1
+	format="$1"
 	shift
 	if [ $# -ge 1 ]; then
-		git log --topo-order --no-walk=sorted --date=iso-local --pretty=format:$format "$@"
+		git log --topo-order --no-walk=sorted --date=iso-local --pretty=format:"$format" "$@"
 	fi
 	echo
 }
