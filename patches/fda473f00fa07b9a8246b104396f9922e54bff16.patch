@@ -359,7 +359,7 @@ index 2d78055..1db50ee 100644
  impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
      fn seek(&mut self, style: SeekFrom) -> io::Result<u64> {
          let pos = match style {
-@@ -210,12 +202,11 @@
+@@ -210,11 +202,10 @@
      }
  }
  
