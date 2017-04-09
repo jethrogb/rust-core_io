@@ -1,6 +1,6 @@
 [package]
 name = "core_io"
-version = "0.1.20161028"
+version = "0.1.20170408"
 authors = ["The Rust Project Developers", "Jethro Beekman"]
 license = "MIT/Apache-2.0"
 description = """
