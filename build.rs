@@ -36,17 +36,25 @@ impl Sub<Mapping> for Vec<Mapping> {
 }
 
 fn main() {
+	let ver=rustc_version::version_meta();
+
 	let io_commit=match env::var("CORE_IO_COMMIT") {
 		Ok(c) => c,
 		Err(env::VarError::NotUnicode(_)) => panic!("Invalid commit specified in CORE_IO_COMMIT"),
 		Err(env::VarError::NotPresent) => {
 			let mappings=include!("mapping.rs");
 			
-			let compiler=rustc_version::version_meta().commit_hash.expect("Couldn't determine compiler version");
+			let compiler=ver.commit_hash.expect("Couldn't determine compiler version");
 			mappings.iter().find(|&&Mapping(elem,_)|elem==compiler).expect("Unknown compiler version, upgrade core_io?").1.to_owned()
 		}
 	};
 	
+	if ver.commit_date.as_ref().map_or(false,|d| &**d<"2016-12-15") {
+		println!("cargo:rustc-cfg=rustc_unicode");
+	} else if ver.commit_date.as_ref().map_or(false,|d| &**d<"2017-03-03") {
+		println!("cargo:rustc-cfg=std_unicode");
+	}
+
 	let mut dest_path=PathBuf::from(env::var_os("OUT_DIR").unwrap());
 	dest_path.push("io.rs");
 	let mut f=File::create(&dest_path).unwrap();

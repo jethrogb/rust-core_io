@@ -3,13 +3,16 @@
 //! the [std documentation](https://doc.rust-lang.org/nightly/std/io/index.html)
 //! for a full description of the functionality.
 #![allow(stable_features,unused_features)]
-#![feature(question_mark,const_fn,collections,alloc,unicode,copy_from_slice,str_char,try_from)]
+#![feature(question_mark,const_fn,collections,alloc,unicode,copy_from_slice,str_char,try_from,str_internals)]
 #![no_std]
 
 #[cfg_attr(feature="collections",macro_use)]
 #[cfg(feature="collections")] extern crate collections;
 #[cfg(feature="alloc")] extern crate alloc;
+#[cfg(rustc_unicode)]
 extern crate rustc_unicode;
+#[cfg(std_unicode)]
+extern crate std_unicode;
 
 #[cfg(not(feature="collections"))]
 pub type ErrorString = &'static str;
