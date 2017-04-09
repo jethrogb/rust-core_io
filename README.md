@@ -22,6 +22,15 @@ tree diff as the patch. The temporary git repository will be deleted. Before
 dropping into the shell, the script will show you nearby commits, you can try
 to apply `$PATCH_DIR/that_commit.patch` and see if it works for you.
 
+## Publishing
+
+```
+$ echo FULL_COMMIT_ID ...|GIT_DIR=/your/rust/dir/.git ./build-src.sh publish
+```
+
+Again, instead of echoing in the commit IDs, you might pipe in `rustc-commit-db
+list-valid`.
+
 ## Editing patches
 
 To edit all patches, again make a checkout of the rust source. Then, run:
