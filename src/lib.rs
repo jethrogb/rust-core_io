@@ -28,14 +28,14 @@ impl<T> FakeBox<T> {
 }
 
 // Needed for older compilers, to ignore vec!/format! macros in tests
-#[cfg(not(feature="collections"))]
+#[cfg(not(any(feature="collections", feature = "alloc")))]
 #[allow(unused)]
 macro_rules! vec (
 	( $ elem : expr ; $ n : expr ) => { () };
 	( $ ( $ x : expr ) , * ) => { () };
 	( $ ( $ x : expr , ) * ) => { () };
 );
-#[cfg(not(feature="collections"))]
+#[cfg(not(any(feature="collections", feature = "alloc")))]
 #[allow(unused)]
 macro_rules! format {
 	( $ ( $ arg : tt ) * ) => { () };
