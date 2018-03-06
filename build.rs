@@ -55,6 +55,10 @@ fn main() {
 		println!("cargo:rustc-cfg=std_unicode");
 	}
 
+	if ver.commit_date.as_ref().map_or(false,|d| &**d>"2017-06-15") {
+		println!("cargo:rustc-cfg=collections_in_alloc");
+	}
+
 	let mut dest_path=PathBuf::from(env::var_os("OUT_DIR").unwrap());
 	dest_path.push("io.rs");
 	let mut f=File::create(&dest_path).unwrap();

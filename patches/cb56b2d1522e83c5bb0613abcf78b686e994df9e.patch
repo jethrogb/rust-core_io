@@ -969,7 +969,7 @@ diff --git a/mod.rs b/mod.rs
 index d403bf6..50bbc9d 100644
 --- a/mod.rs
 +++ b/mod.rs
-@@ -268,50 +268,33 @@
+@@ -268,50 +268,35 @@
  //! [`Result`]: ../result/enum.Result.html
  //! [`.unwrap()`]: ../result/enum.Result.html#method.unwrap
  
@@ -1012,6 +1012,8 @@ index d403bf6..50bbc9d 100644
 -#[unstable(feature = "libstd_io_internals", issue = "42788")]
 -#[doc(no_inline, hidden)]
 -pub use self::stdio::{set_panic, set_print};
++#[cfg(feature="collections")] use collections::string::String;
++#[cfg(feature="collections")] use collections::vec::Vec;
  
  pub mod prelude;
 -mod buffered;
