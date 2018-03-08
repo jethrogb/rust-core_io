@@ -41,7 +41,9 @@ get_patch_commits() {
 prepare_version() {
 	mkdir src/$IO_COMMIT
 	git_extract src/libstd/io/
-	if git_file_exists src/libstd/sys_common/memchr.rs; then
+	if git_file_exists src/libcore/slice/memchr.rs; then
+		true
+	elif git_file_exists src/libstd/sys_common/memchr.rs; then
 		git_extract src/libstd/sys_common/memchr.rs
 	elif git_file_exists src/libstd/sys/common/memchr.rs; then
 		git_extract src/libstd/sys/common/memchr.rs

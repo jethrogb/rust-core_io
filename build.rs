@@ -48,7 +48,15 @@ fn main() {
 			mappings.iter().find(|&&Mapping(elem,_)|elem==compiler).expect("Unknown compiler version, upgrade core_io?").1.to_owned()
 		}
 	};
-	
+
+	if ver.commit_date.as_ref().map_or(false,|d| &**d>="2018-01-01") {
+		println!("cargo:rustc-cfg=core_memchr");
+	}
+
+	if ver.commit_date.as_ref().map_or(false,|d| &**d>="2017-06-15") {
+		println!("cargo:rustc-cfg=no_collections");
+	}
+
 	if ver.commit_date.as_ref().map_or(false,|d| &**d<"2016-12-15") {
 		println!("cargo:rustc-cfg=rustc_unicode");
 	} else if ver.commit_date.as_ref().map_or(false,|d| &**d<"2017-03-03") {
