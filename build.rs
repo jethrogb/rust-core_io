@@ -73,6 +73,6 @@ fn main() {
 	target_path.push("mod.rs");
 
 	f.write_all(br#"#[path=""#).unwrap();
-	f.write_all(target_path.into_os_string().into_string().unwrap().as_bytes()).unwrap();
+	f.write_all(target_path.into_os_string().into_string().unwrap().replace("\\", "\\\\").as_bytes()).unwrap();
 	f.write_all(br#""] mod io;"#).unwrap();
 }
