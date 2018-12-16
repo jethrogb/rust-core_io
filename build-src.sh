@@ -3,6 +3,10 @@
 #
 # commit-db.rb list-valid nightly|GIT_DIR=/your/rust/dir/.git ./build-src.sh
 
+if [ $(uname) == 'Darwin' ]; then
+	alias tac='tail -f'
+fi
+
 prompt_changes() {
 	local MAIN_GIT_DIR="$GIT_DIR"
 	local GIT_DIR=./.git CORE_IO_COMMIT=$IO_COMMIT
@@ -10,16 +14,16 @@ prompt_changes() {
 	git add .
 	git commit -m "rust src import" > /dev/null
 	export CORE_IO_COMMIT
-	
+
 	bold_arrow; echo 'No patch found for' $IO_COMMIT
 	bold_arrow; echo 'Nearby commit(s) with patches:'
 	echo
 	GIT_DIR="$MAIN_GIT_DIR" git_commits_ordered '%H %cd' $(get_patch_commits) $IO_COMMIT | \
 	grep --color=always -1 $IO_COMMIT | sed /$IO_COMMIT/'s/$/ <=== your commit/'
 	echo
-	bold_arrow; echo -e "Try applying one of those using: \e[1;36mtry_patch COMMIT\e[0m"
-	bold_arrow; echo -e "Remember to test your changes with: \e[1;36mcargo build\e[0m"
-	bold_arrow; echo -e "Make your changes now (\e[1;36mctrl-D\e[0m when finished)"
+	bold_arrow; echo -e "Try applying one of those using: \033[1;36mtry_patch COMMIT\033[0m"
+	bold_arrow; echo -e "Remember to test your changes with: \033[1;36mcargo build\033[0m"
+	bold_arrow; echo -e "Make your changes now (\033[1;36mctrl-D\033[0m when finished)"
 	bash_diff_loop "No changes were made"
 	bold_arrow; echo "Saving changes as $IO_COMMIT.patch"
 	git clean -f -x
@@ -52,7 +56,7 @@ find src -mindepth 1 -type d -prune -exec rm -rf {} \;
 for IO_COMMIT in $OLD_COMMITS $(git_commits_ordered %H $NEW_COMMITS|tac); do
 	if ! [ -d src/$IO_COMMIT ]; then
 		prepare_version
-		
+
 		if [ -f patches/$IO_COMMIT.patch ]; then
 			bold_arrow; echo "Patching $IO_COMMIT"
 			patch -s -p1 -d src/$IO_COMMIT < patches/$IO_COMMIT.patch
@@ -64,7 +68,11 @@ for IO_COMMIT in $OLD_COMMITS $(git_commits_ordered %H $NEW_COMMITS|tac); do
 	fi
 done
 
-OLD_GIT_PERM=$(stat --printf=%a .git)
+if [ $(uname) == 'Darwin' ]; then
+	OLD_GIT_PERM=$(stat -f %Op .git)
+else
+	OLD_GIT_PERM=$(stat --printf=%a .git)
+fi
 trap "chmod $OLD_GIT_PERM .git; exit 1" SIGINT
 chmod 000 .git
 cargo ${1:-package}
