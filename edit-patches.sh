@@ -5,7 +5,7 @@
 
 prompt_changes() {
 	bold_arrow; echo "Editing $IO_COMMIT"
-	bold_arrow; echo -e "Remember to test your changes with: \e[1;36mcargo build\e[0m"
+	bold_arrow; echo -e "Remember to test your changes with: \033[1;36mcargo build\033[0m"
 
 	local MAIN_GIT_DIR="$GIT_DIR"
 	local GIT_DIR=./.git CORE_IO_COMMIT=$IO_COMMIT
@@ -18,9 +18,9 @@ prompt_changes() {
 	patch -s -p1 < $PATCH_DIR/$IO_COMMIT.patch
 	git commit -a -m "existing patch for $IO_COMMIT" > /dev/null
 
-	bold_arrow; echo -e "Applying patch from \e[1;36m$TMP_PATCH\e[0m"
+	bold_arrow; echo -e "Applying patch from \033[1;36m$TMP_PATCH\033[0m"
 	patch -p1 < $TMP_PATCH || true
-	bold_arrow; echo -e "Make your changes now (\e[1;36mctrl-D\e[0m when finished)"
+	bold_arrow; echo -e "Make your changes now (\033[1;36mctrl-D\033[0m when finished)"
 	bash_diff_loop "No changes were made"
 	bold_arrow; echo "Replacing $IO_COMMIT.patch with updated version"
 	git diff > $TMP_PATCH
