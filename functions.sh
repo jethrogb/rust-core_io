@@ -35,7 +35,7 @@ get_io_commits() {
 }
 
 get_patch_commits() {
-	find $PATCH_DIR -type f -printf %f\\n|cut -d. -f1
+	find $PATCH_DIR -type f|xargs -n 1 basename|cut -d. -f1
 }
 
 prepare_version() {
@@ -54,7 +54,7 @@ prepare_version() {
 }
 
 bold_arrow() {
-	echo -ne '\e[1;36m==> \e[0m'
+	echo -ne '\033[1;36m==> \033[0m'
 }
 
 custom_bashrc() {
