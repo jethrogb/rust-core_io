@@ -1,5 +1,7 @@
 # core_io
 
+[![Build Status](https://travis-ci.com/jethrogb/rust-core_io.svg?branch=master)](https://travis-ci.com/jethrogb/rust-core_io)
+
 `std::io` with all the parts that don't work in core removed.
 
 ## Adding new nightly versions
