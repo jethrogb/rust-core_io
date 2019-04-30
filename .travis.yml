@@ -1,0 +1,18 @@
+branches:
+  only:
+    # This is where pull requests from "bors r+" are built.
+    - staging
+    # This is where pull requests from "bors try" are built.
+    - trying
+    # Not really necessary, just to get a green badge on “master”
+    - master
+language: rust
+dist: xenial
+rust:
+    - nightly-2015-05-01 # see ct.sh for more versions
+env:
+    - RUST_BACKTRACE=1
+before_script:
+  - ./ct.sh install
+script:
+  - ./ct.sh
