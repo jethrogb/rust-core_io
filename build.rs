@@ -4,35 +4,45 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use std::ops::{Neg,Sub};
 
-/*
- * Let me explain this hack. For the sync shell script it's easiest if every 
- * line in mapping.rs looks exactly the same. This means that specifying an 
- * array literal is not possible. include!() can only expand to expressions, so 
- * just specifying the contents of an array is also not possible.
- *
- * This leaves us with trying to find an expression in which every line looks 
- * the same. This can be done using the `-` operator. This can be a unary 
- * operator (first thing on the first line), or a binary operator (later 
- * lines). That is exactly what's going on here, and Neg and Sub simply build a 
- * vector of the operangs.
- */
 struct Mapping(&'static str,&'static str);
 
-impl Neg for Mapping {
-	type Output = Vec<Mapping>;
-    fn neg(self) -> Vec<Mapping> {
-		vec![self.into()]
-	}
-}
+fn parse_mappings(mut mappings: &'static str) -> Vec<Mapping> {
+	// FIXME: The format used here used to be parsed directly by rustc, which
+	// is why it's kind of weird. It should be changed to a saner format.
 
-impl Sub<Mapping> for Vec<Mapping> {
-    type Output=Vec<Mapping>;
-    fn sub(mut self, rhs: Mapping) -> Vec<Mapping> {
-		self.push(rhs.into());
-		self
+	const P1: &'static str = r#"-Mapping(""#;
+	const P2: &'static str = r#"",""#; ;
+	const P3: &'static str = "\")\n";
+
+	trait TakePrefix: Sized {
+		fn take_prefix(&mut self, mid: usize) -> Self;
 	}
+
+	impl<'a> TakePrefix for &'a str {
+		fn take_prefix(&mut self, mid: usize) -> Self {
+			let prefix = &self[..mid];
+			*self = &self[mid..];
+			prefix
+		}
+	}
+
+	let mut result = Vec::with_capacity( mappings.len() / (P1.len()+40+P2.len()+40+P3.len()) );
+
+	while mappings.len() != 0 {
+		match (
+			mappings.take_prefix(P1.len()),
+			mappings.take_prefix(40),
+			mappings.take_prefix(P2.len()),
+			mappings.take_prefix(40),
+			mappings.take_prefix(P3.len()),
+		) {
+			(P1, hash1, P2, hash2, P3) => result.push(Mapping(hash1, hash2)),
+			_ => panic!("Invalid input in mappings"),
+		}
+	}
+
+	result
 }
 
 fn main() {
@@ -42,8 +52,8 @@ fn main() {
 		Ok(c) => c,
 		Err(env::VarError::NotUnicode(_)) => panic!("Invalid commit specified in CORE_IO_COMMIT"),
 		Err(env::VarError::NotPresent) => {
-			let mappings=include!("mapping.rs");
-			
+			let mappings=parse_mappings(include_str!("mapping.rs"));
+
 			let compiler=ver.commit_hash.expect("Couldn't determine compiler version");
 			mappings.iter().find(|&&Mapping(elem,_)|elem==compiler).expect("Unknown compiler version, upgrade core_io?").1.to_owned()
 		}
