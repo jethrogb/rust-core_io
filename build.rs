@@ -45,6 +45,18 @@ fn parse_mappings(mut mappings: &'static str) -> Vec<Mapping> {
 	result
 }
 
+type Cfg = Option<&'static str>;
+type Date = &'static str;
+/// A `ConditionalCfg` is basically a list of optional feature names
+/// (`Cfg`s) separated by `Date`s. The dates specify ranges of compiler
+/// versions for which to enable particular features.
+type ConditionalCfg = (Cfg, &'static [(Date, Cfg)]);
+const CONDITIONAL_CFGS: &'static [ConditionalCfg] = &[
+	(None, &[("2018-01-01", Some("core_memchr"))]),
+	(None, &[("2017-06-15", Some("no_collections"))]),
+	(Some("rustc_unicode"), &[("2016-12-15", Some("std_unicode")), ("2017-03-03", None)]),
+];
+
 fn main() {
 	let ver=rustc_version::version_meta();
 
@@ -59,18 +71,17 @@ fn main() {
 		}
 	};
 
-	if ver.commit_date.as_ref().map_or(false,|d| &**d>="2018-01-01") {
-		println!("cargo:rustc-cfg=core_memchr");
-	}
-
-	if ver.commit_date.as_ref().map_or(false,|d| &**d>="2017-06-15") {
-		println!("cargo:rustc-cfg=no_collections");
-	}
-
-	if ver.commit_date.as_ref().map_or(false,|d| &**d<"2016-12-15") {
-		println!("cargo:rustc-cfg=rustc_unicode");
-	} else if ver.commit_date.as_ref().map_or(false,|d| &**d<"2017-03-03") {
-		println!("cargo:rustc-cfg=std_unicode");
+	for &(mut curcfg, rest) in CONDITIONAL_CFGS {
+		for &(date, nextcfg) in rest {
+			// if no commit_date is provided, assume compiler is current
+			if ver.commit_date.as_ref().map_or(false,|d| &**d<date) {
+				break;
+			}
+			curcfg = nextcfg;
+		}
+		if let Some(cfg) = curcfg {
+			println!("cargo:rustc-cfg={}", cfg);
+		}
 	}
 
 	let mut dest_path=PathBuf::from(env::var_os("OUT_DIR").unwrap());
