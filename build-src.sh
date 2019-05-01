@@ -4,7 +4,7 @@
 # commit-db.rb list-valid nightly|GIT_DIR=/your/rust/dir/.git ./build-src.sh
 
 if [ $(uname) == 'Darwin' ]; then
-	alias tac='tail -f'
+	alias tac='tail -r'
 fi
 
 prompt_changes() {
