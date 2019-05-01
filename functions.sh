@@ -35,7 +35,7 @@ get_io_commits() {
 }
 
 get_patch_commits() {
-	find $PATCH_DIR -type f|xargs -n 1 basename|cut -d. -f1
+	find $PATCH_DIR -type f -print0|xargs -0 -n 1 basename|cut -d. -f1
 }
 
 prepare_version() {
