@@ -9,7 +9,7 @@ branches:
 language: rust
 dist: xenial
 rust:
-    - nightly-2015-05-01 # see ct.sh for more versions
+    - nightly-2016-03-11 # see ct.sh for more versions
 env:
     - RUST_BACKTRACE=1
 before_script:
