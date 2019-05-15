@@ -52,6 +52,11 @@ type Date = &'static str;
 /// versions for which to enable particular features.
 type ConditionalCfg = (Cfg, &'static [(Date, Cfg)]);
 const CONDITIONAL_CFGS: &'static [ConditionalCfg] = &[
+	(None, &[("2019-02-24", Some("pattern_guards"))]),
+	(None, &[("2018-08-14", Some("non_exhaustive"))]),
+	(Some("collections"), &[("2018-08-13", None)]),
+	(Some("str_char"), &[("2018-08-13", None)]),
+	(Some("unicode"), &[("2018-08-13", None)]),
 	(None, &[("2018-01-01", Some("core_memchr"))]),
 	(None, &[("2017-06-15", Some("no_collections"))]),
 	(Some("rustc_unicode"), &[("2016-12-15", Some("std_unicode")), ("2017-03-03", None)]),
@@ -87,7 +92,7 @@ fn main() {
 	let mut dest_path=PathBuf::from(env::var_os("OUT_DIR").unwrap());
 	dest_path.push("io.rs");
 	let mut f=File::create(&dest_path).unwrap();
-	
+
 	let mut target_path=PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap());
 	target_path.push("src");
 	target_path.push(io_commit);
