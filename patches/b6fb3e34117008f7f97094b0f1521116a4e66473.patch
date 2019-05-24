@@ -15,7 +15,7 @@ index 441f6b9..540d4aa 100644
 +use core::fmt;
  use crate::io::{self, Initializer, DEFAULT_BUF_SIZE, Error, ErrorKind, SeekFrom, IoVec, IoVecMut};
 -use crate::memchr;
-+use io::memchr;
++use crate::io::memchr;
  
  /// The `BufReader` struct adds buffering to any reader.
  ///
@@ -311,21 +311,19 @@ diff --git a/cursor.rs b/cursor.rs
 index 247d45c..f13522d 100644
 --- a/cursor.rs
 +++ b/cursor.rs
-@@ -1,9 +1,10 @@
+@@ -1,9 +1,9 @@
  use crate::io::prelude::*;
  
 -use crate::cmp;
--use crate::io::{self, Initializer, SeekFrom, Error, ErrorKind, IoVec, IoVecMut};
 +use core::cmp;
-+use crate::io::{self, Initializer, SeekFrom, Error, ErrorKind};
-+#[cfg(feature="collections")] use crate::io::{IoVec, IoVecMut};
+ use crate::io::{self, Initializer, SeekFrom, Error, ErrorKind, IoVec, IoVecMut};
  
 -use core::convert::TryInto;
 +#[cfg(feature="collections")] use core::convert::TryInto;
  
  /// A `Cursor` wraps an in-memory buffer and provides it with a
  /// [`Seek`] implementation.
-@@ -71,7 +72,6 @@ use core::convert::TryInto;
+@@ -71,7 +71,6 @@ use core::convert::TryInto;
  ///     assert_eq!(&buff.get_ref()[5..15], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
  /// }
  /// ```
@@ -333,7 +331,7 @@ index 247d45c..f13522d 100644
  #[derive(Clone, Debug)]
  pub struct Cursor<T> {
      inner: T,
-@@ -94,7 +94,6 @@ impl<T> Cursor<T> {
+@@ -94,7 +93,6 @@ impl<T> Cursor<T> {
      /// # fn force_inference(_: &Cursor<Vec<u8>>) {}
      /// # force_inference(&buff);
      /// ```
@@ -341,7 +339,7 @@ index 247d45c..f13522d 100644
      pub fn new(inner: T) -> Cursor<T> {
          Cursor { pos: 0, inner: inner }
      }
-@@ -112,7 +111,6 @@ impl<T> Cursor<T> {
+@@ -112,7 +110,6 @@ impl<T> Cursor<T> {
      ///
      /// let vec = buff.into_inner();
      /// ```
@@ -349,7 +347,7 @@ index 247d45c..f13522d 100644
      pub fn into_inner(self) -> T { self.inner }
  
      /// Gets a reference to the underlying value in this cursor.
-@@ -128,7 +126,6 @@ impl<T> Cursor<T> {
+@@ -128,7 +125,6 @@ impl<T> Cursor<T> {
      ///
      /// let reference = buff.get_ref();
      /// ```
@@ -357,7 +355,7 @@ index 247d45c..f13522d 100644
      pub fn get_ref(&self) -> &T { &self.inner }
  
      /// Gets a mutable reference to the underlying value in this cursor.
-@@ -147,7 +144,6 @@ impl<T> Cursor<T> {
+@@ -147,7 +143,6 @@ impl<T> Cursor<T> {
      ///
      /// let reference = buff.get_mut();
      /// ```
@@ -365,7 +363,7 @@ index 247d45c..f13522d 100644
      pub fn get_mut(&mut self) -> &mut T { &mut self.inner }
  
      /// Returns the current position of this cursor.
-@@ -169,7 +165,6 @@ impl<T> Cursor<T> {
+@@ -169,7 +164,6 @@ impl<T> Cursor<T> {
      /// buff.seek(SeekFrom::Current(-1)).unwrap();
      /// assert_eq!(buff.position(), 1);
      /// ```
@@ -373,7 +371,7 @@ index 247d45c..f13522d 100644
      pub fn position(&self) -> u64 { self.pos }
  
      /// Sets the position of this cursor.
-@@ -189,11 +184,9 @@ impl<T> Cursor<T> {
+@@ -189,11 +183,9 @@ impl<T> Cursor<T> {
      /// buff.set_position(4);
      /// assert_eq!(buff.position(), 4);
      /// ```
@@ -385,7 +383,7 @@ index 247d45c..f13522d 100644
  impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
      fn seek(&mut self, style: SeekFrom) -> io::Result<u64> {
          let (base_pos, offset) = match style {
-@@ -222,14 +215,14 @@ impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
+@@ -222,10 +214,9 @@ impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
      }
  }
  
@@ -397,12 +395,7 @@ index 247d45c..f13522d 100644
          self.pos += n as u64;
          Ok(n)
      }
- 
-+    #[cfg(feature="collections")]
-     fn read_vectored(&mut self, bufs: &mut [IoVecMut<'_>]) -> io::Result<usize> {
-         let mut nread = 0;
-         for buf in bufs {
-@@ -244,7 +237,7 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
+@@ -244,7 +235,7 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
  
      fn read_exact(&mut self, buf: &mut [u8]) -> io::Result<()> {
          let n = buf.len();
@@ -411,7 +404,7 @@ index 247d45c..f13522d 100644
          self.pos += n as u64;
          Ok(())
      }
-@@ -255,12 +248,16 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
+@@ -255,12 +246,16 @@ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
      }
  }
  
@@ -431,15 +424,7 @@ index 247d45c..f13522d 100644
      fn consume(&mut self, amt: usize) { self.pos += amt as u64; }
  }
  
-@@ -272,6 +269,7 @@ fn slice_write(pos_mut: &mut u64, slice: &mut [u8], buf: &[u8]) -> io::Result<us
-     Ok(amt)
- }
- 
-+#[cfg(feature="collections")]
- fn slice_write_vectored(
-     pos_mut: &mut u64,
-     slice: &mut [u8],
-@@ -290,6 +288,7 @@ fn slice_write_vectored(
+@@ -290,6 +285,7 @@ fn slice_write_vectored(
  }
  
  // Resizing write implementation
@@ -447,7 +432,7 @@ index 247d45c..f13522d 100644
  fn vec_write(pos_mut: &mut u64, vec: &mut Vec<u8>, buf: &[u8]) -> io::Result<usize> {
      let pos: usize = (*pos_mut).try_into().map_err(|_| {
          Error::new(ErrorKind::InvalidInput,
-@@ -316,6 +315,7 @@ fn vec_write(pos_mut: &mut u64, vec: &mut Vec<u8>, buf: &[u8]) -> io::Result<usi
+@@ -316,6 +312,7 @@ fn vec_write(pos_mut: &mut u64, vec: &mut Vec<u8>, buf: &[u8]) -> io::Result<usi
      Ok(buf.len())
  }
  
@@ -455,7 +440,7 @@ index 247d45c..f13522d 100644
  fn vec_write_vectored(
      pos_mut: &mut u64,
      vec: &mut Vec<u8>,
-@@ -329,13 +329,13 @@ fn vec_write_vectored(
+@@ -329,7 +326,6 @@ fn vec_write_vectored(
      Ok(nwritten)
  }
  
@@ -463,14 +448,7 @@ index 247d45c..f13522d 100644
  impl Write for Cursor<&mut [u8]> {
      #[inline]
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-         slice_write(&mut self.pos, self.inner, buf)
-     }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> io::Result<usize> {
-         slice_write_vectored(&mut self.pos, self.inner, bufs)
-@@ -344,12 +344,13 @@ impl Write for Cursor<&mut [u8]> {
+@@ -344,7 +340,7 @@ impl Write for Cursor<&mut [u8]> {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  
@@ -479,13 +457,7 @@ index 247d45c..f13522d 100644
  impl Write for Cursor<&mut Vec<u8>> {
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
          vec_write(&mut self.pos, self.inner, buf)
-     }
- 
-+    #[cfg(feature="collections")]
-     fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> io::Result<usize> {
-         vec_write_vectored(&mut self.pos, self.inner, bufs)
-     }
-@@ -357,12 +358,13 @@ impl Write for Cursor<&mut Vec<u8>> {
+@@ -357,7 +353,7 @@ impl Write for Cursor<&mut Vec<u8>> {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  
@@ -494,13 +466,7 @@ index 247d45c..f13522d 100644
  impl Write for Cursor<Vec<u8>> {
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
          vec_write(&mut self.pos, &mut self.inner, buf)
-     }
- 
-+    #[cfg(feature="collections")]
-     fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> io::Result<usize> {
-         vec_write_vectored(&mut self.pos, &mut self.inner, bufs)
-     }
-@@ -370,13 +372,14 @@ impl Write for Cursor<Vec<u8>> {
+@@ -370,8 +366,8 @@ impl Write for Cursor<Vec<u8>> {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  
@@ -511,12 +477,6 @@ index 247d45c..f13522d 100644
      #[inline]
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
          slice_write(&mut self.pos, &mut self.inner, buf)
-     }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> io::Result<usize> {
-         slice_write_vectored(&mut self.pos, &mut self.inner, bufs)
 diff --git a/error.rs b/error.rs
 index 614b791..e4ce8b5 100644
 --- a/error.rs
@@ -844,7 +804,7 @@ diff --git a/impls.rs b/impls.rs
 index b286e40..7472d9c 100644
 --- a/impls.rs
 +++ b/impls.rs
-@@ -1,19 +1,22 @@
+@@ -1,13 +1,15 @@
 -use crate::cmp;
 -use crate::io::{self, SeekFrom, Read, Initializer, Write, Seek, BufRead, Error, ErrorKind, IoVecMut,
 -         IoVec};
@@ -852,8 +812,8 @@ index b286e40..7472d9c 100644
 -use crate::mem;
 +#[cfg(feature="alloc")] use alloc::boxed::Box;
 +use core::cmp;
-+use crate::io::{self, SeekFrom, Read, Initializer, Write, Seek, Error, ErrorKind};
-+#[cfg(feature="collections")] use crate::io::{BufRead, IoVecMut, IoVec};
++use crate::io::{self, SeekFrom, Read, Initializer, Write, Seek, Error, ErrorKind, IoVecMut, IoVec};
++#[cfg(feature="collections")] use crate::io::BufRead;
 +use core::fmt;
 +use core::mem;
 +#[cfg(feature="collections")] use collections::string::String;
@@ -866,14 +826,7 @@ index b286e40..7472d9c 100644
  impl<R: Read + ?Sized> Read for &mut R {
      #[inline]
      fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-         (**self).read(buf)
-     }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn read_vectored(&mut self, bufs: &mut [IoVecMut<'_>]) -> io::Result<usize> {
-         (**self).read_vectored(bufs)
-@@ -24,11 +27,13 @@ impl<R: Read + ?Sized> Read for &mut R {
+@@ -24,11 +26,13 @@ impl<R: Read + ?Sized> Read for &mut R {
          (**self).initializer()
      }
  
@@ -887,7 +840,7 @@ index b286e40..7472d9c 100644
      #[inline]
      fn read_to_string(&mut self, buf: &mut String) -> io::Result<usize> {
          (**self).read_to_string(buf)
-@@ -39,11 +44,11 @@ impl<R: Read + ?Sized> Read for &mut R {
+@@ -39,7 +43,6 @@ impl<R: Read + ?Sized> Read for &mut R {
          (**self).read_exact(buf)
      }
  }
@@ -895,12 +848,7 @@ index b286e40..7472d9c 100644
  impl<W: Write + ?Sized> Write for &mut W {
      #[inline]
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> { (**self).write(buf) }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> io::Result<usize> {
-         (**self).write_vectored(bufs)
-@@ -62,12 +67,11 @@ impl<W: Write + ?Sized> Write for &mut W {
+@@ -62,12 +65,11 @@ impl<W: Write + ?Sized> Write for &mut W {
          (**self).write_fmt(fmt)
      }
  }
@@ -914,7 +862,7 @@ index b286e40..7472d9c 100644
  impl<B: BufRead + ?Sized> BufRead for &mut B {
      #[inline]
      fn fill_buf(&mut self) -> io::Result<&[u8]> { (**self).fill_buf() }
-@@ -86,13 +90,14 @@ impl<B: BufRead + ?Sized> BufRead for &mut B {
+@@ -86,7 +88,7 @@ impl<B: BufRead + ?Sized> BufRead for &mut B {
      }
  }
  
@@ -923,14 +871,7 @@ index b286e40..7472d9c 100644
  impl<R: Read + ?Sized> Read for Box<R> {
      #[inline]
      fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-         (**self).read(buf)
-     }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn read_vectored(&mut self, bufs: &mut [IoVecMut<'_>]) -> io::Result<usize> {
-         (**self).read_vectored(bufs)
-@@ -103,11 +108,13 @@ impl<R: Read + ?Sized> Read for Box<R> {
+@@ -103,11 +105,13 @@ impl<R: Read + ?Sized> Read for Box<R> {
          (**self).initializer()
      }
  
@@ -944,7 +885,7 @@ index b286e40..7472d9c 100644
      #[inline]
      fn read_to_string(&mut self, buf: &mut String) -> io::Result<usize> {
          (**self).read_to_string(buf)
-@@ -118,11 +125,12 @@ impl<R: Read + ?Sized> Read for Box<R> {
+@@ -118,7 +122,7 @@ impl<R: Read + ?Sized> Read for Box<R> {
          (**self).read_exact(buf)
      }
  }
@@ -953,12 +894,7 @@ index b286e40..7472d9c 100644
  impl<W: Write + ?Sized> Write for Box<W> {
      #[inline]
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> { (**self).write(buf) }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> io::Result<usize> {
-         (**self).write_vectored(bufs)
-@@ -141,12 +149,12 @@ impl<W: Write + ?Sized> Write for Box<W> {
+@@ -141,12 +145,12 @@ impl<W: Write + ?Sized> Write for Box<W> {
          (**self).write_fmt(fmt)
      }
  }
@@ -973,7 +909,7 @@ index b286e40..7472d9c 100644
  impl<B: BufRead + ?Sized> BufRead for Box<B> {
      #[inline]
      fn fill_buf(&mut self) -> io::Result<&[u8]> { (**self).fill_buf() }
-@@ -186,7 +194,6 @@ impl Write for Box<dyn (::realstd::io::Write) + Send> {
+@@ -186,7 +190,6 @@ impl Write for Box<dyn (::realstd::io::Write) + Send> {
  ///
  /// Note that reading updates the slice to point to the yet unread part.
  /// The slice will be empty when EOF is reached.
@@ -981,15 +917,7 @@ index b286e40..7472d9c 100644
  impl Read for &[u8] {
      #[inline]
      fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-@@ -206,6 +213,7 @@ impl Read for &[u8] {
-         Ok(amt)
-     }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn read_vectored(&mut self, bufs: &mut [IoVecMut<'_>]) -> io::Result<usize> {
-         let mut nread = 0;
-@@ -245,6 +253,7 @@ impl Read for &[u8] {
+@@ -245,6 +248,7 @@ impl Read for &[u8] {
          Ok(())
      }
  
@@ -997,7 +925,7 @@ index b286e40..7472d9c 100644
      #[inline]
      fn read_to_end(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
          buf.extend_from_slice(*self);
-@@ -254,7 +263,7 @@ impl Read for &[u8] {
+@@ -254,7 +258,7 @@ impl Read for &[u8] {
      }
  }
  
@@ -1006,7 +934,7 @@ index b286e40..7472d9c 100644
  impl BufRead for &[u8] {
      #[inline]
      fn fill_buf(&mut self) -> io::Result<&[u8]> { Ok(*self) }
-@@ -268,7 +277,6 @@ impl BufRead for &[u8] {
+@@ -268,7 +272,6 @@ impl BufRead for &[u8] {
  ///
  /// Note that writing updates the slice to point to the yet unwritten part.
  /// The slice will be empty when it has been completely overwritten.
@@ -1014,15 +942,7 @@ index b286e40..7472d9c 100644
  impl Write for &mut [u8] {
      #[inline]
      fn write(&mut self, data: &[u8]) -> io::Result<usize> {
-@@ -279,6 +287,7 @@ impl Write for &mut [u8] {
-         Ok(amt)
-     }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> io::Result<usize> {
-         let mut nwritten = 0;
-@@ -307,7 +316,7 @@ impl Write for &mut [u8] {
+@@ -307,7 +310,7 @@ impl Write for &mut [u8] {
  
  /// Write is implemented for `Vec<u8>` by appending to the vector.
  /// The vector will grow as needed.
@@ -1031,14 +951,6 @@ index b286e40..7472d9c 100644
  impl Write for Vec<u8> {
      #[inline]
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-@@ -315,6 +324,7 @@ impl Write for Vec<u8> {
-         Ok(buf.len())
-     }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> io::Result<usize> {
-         let len = bufs.iter().map(|b| b.len()).sum();
 diff --git a/mod.rs b/mod.rs
 index 14a16f3..07792b7 100644
 --- a/mod.rs
@@ -1072,9 +984,9 @@ index 14a16f3..07792b7 100644
 +mod memchr;
 +#[cfg(all(feature="collections",core_memchr))]
 +use core::slice::memchr;
-+#[cfg(feature="collections")] use core::ops::{Deref, DerefMut};
-+use core::ptr;
 +use core::slice;
++use core::ops::{Deref, DerefMut};
++use core::ptr;
 +
 +#[cfg(feature="collections")] pub use self::buffered::{BufReader, BufWriter, LineWriter};
 +#[cfg(feature="collections")] pub use self::buffered::IntoInnerError;
@@ -1134,23 +1046,7 @@ index 14a16f3..07792b7 100644
  fn read_to_end_with_reservation<R: Read + ?Sized>(r: &mut R,
                                                    buf: &mut Vec<u8>,
                                                    reservation_size: usize) -> Result<usize>
-@@ -390,6 +381,7 @@ fn read_to_end_with_reservation<R: Read + ?Sized>(r: &mut R,
-     ret
- }
- 
-+#[cfg(feature="collections")]
- pub(crate) fn default_read_vectored<F>(read: F, bufs: &mut [IoVecMut<'_>]) -> Result<usize>
- where
-     F: FnOnce(&mut [u8]) -> Result<usize>
-@@ -401,6 +393,7 @@ where
-     read(buf)
- }
- 
-+#[cfg(feature="collections")]
- pub(crate) fn default_write_vectored<F>(write: F, bufs: &[IoVec<'_>]) -> Result<usize>
- where
-     F: FnOnce(&[u8]) -> Result<usize>
-@@ -484,7 +477,6 @@ where
+@@ -484,7 +475,6 @@ where
  /// [`BufReader`]: struct.BufReader.html
  /// [`&str`]: ../../std/primitive.str.html
  /// [slice]: ../../std/primitive.slice.html
@@ -1158,7 +1054,7 @@ index 14a16f3..07792b7 100644
  #[doc(spotlight)]
  pub trait Read {
      /// Pull some bytes from this source into the specified buffer, returning
-@@ -543,7 +535,6 @@ pub trait Read {
+@@ -543,7 +533,6 @@ pub trait Read {
      ///     Ok(())
      /// }
      /// ```
@@ -1166,16 +1062,15 @@ index 14a16f3..07792b7 100644
      fn read(&mut self, buf: &mut [u8]) -> Result<usize>;
  
      /// Like `read`, except that it reads into a slice of buffers.
-@@ -554,7 +545,7 @@ pub trait Read {
+@@ -554,7 +543,6 @@ pub trait Read {
      ///
      /// The default implementation calls `read` with either the first nonempty
      /// buffer provided, or an empty one if none exists.
 -    #[unstable(feature = "iovec", issue = "58452")]
-+    #[cfg(feature="collections")]
      fn read_vectored(&mut self, bufs: &mut [IoVecMut<'_>]) -> Result<usize> {
          default_read_vectored(|b| self.read(b), bufs)
      }
-@@ -581,7 +572,6 @@ pub trait Read {
+@@ -581,7 +569,6 @@ pub trait Read {
      ///
      /// [`Initializer::nop()`]: ../../std/io/struct.Initializer.html#method.nop
      /// [`Initializer`]: ../../std/io/struct.Initializer.html
@@ -1183,7 +1078,7 @@ index 14a16f3..07792b7 100644
      #[inline]
      unsafe fn initializer(&self) -> Initializer {
          Initializer::zeroing()
-@@ -634,7 +624,7 @@ pub trait Read {
+@@ -634,7 +621,7 @@ pub trait Read {
      /// file.)
      ///
      /// [`std::fs::read`]: ../fs/fn.read.html
@@ -1192,7 +1087,7 @@ index 14a16f3..07792b7 100644
      fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
          read_to_end(self, buf)
      }
-@@ -677,7 +667,7 @@ pub trait Read {
+@@ -677,7 +664,7 @@ pub trait Read {
      /// reading from a file.)
      ///
      /// [`std::fs::read_to_string`]: ../fs/fn.read_to_string.html
@@ -1201,7 +1096,7 @@ index 14a16f3..07792b7 100644
      fn read_to_string(&mut self, buf: &mut String) -> Result<usize> {
          // Note that we do *not* call `.read_to_end()` here. We are passing
          // `&mut Vec<u8>` (the raw contents of `buf`) into the `read_to_end`
-@@ -740,7 +730,6 @@ pub trait Read {
+@@ -740,7 +727,6 @@ pub trait Read {
      ///     Ok(())
      /// }
      /// ```
@@ -1209,7 +1104,7 @@ index 14a16f3..07792b7 100644
      fn read_exact(&mut self, mut buf: &mut [u8]) -> Result<()> {
          while !buf.is_empty() {
              match self.read(buf) {
-@@ -792,7 +781,6 @@ pub trait Read {
+@@ -792,7 +778,6 @@ pub trait Read {
      ///     Ok(())
      /// }
      /// ```
@@ -1217,7 +1112,7 @@ index 14a16f3..07792b7 100644
      fn by_ref(&mut self) -> &mut Self where Self: Sized { self }
  
      /// Transforms this `Read` instance to an [`Iterator`] over its bytes.
-@@ -829,7 +817,6 @@ pub trait Read {
+@@ -829,7 +814,6 @@ pub trait Read {
      ///     Ok(())
      /// }
      /// ```
@@ -1225,7 +1120,7 @@ index 14a16f3..07792b7 100644
      fn bytes(self) -> Bytes<Self> where Self: Sized {
          Bytes { inner: self }
      }
-@@ -864,7 +851,6 @@ pub trait Read {
+@@ -864,7 +848,6 @@ pub trait Read {
      ///     Ok(())
      /// }
      /// ```
@@ -1233,7 +1128,7 @@ index 14a16f3..07792b7 100644
      fn chain<R: Read>(self, next: R) -> Chain<Self, R> where Self: Sized {
          Chain { first: self, second: next, done_first: false }
      }
-@@ -900,42 +886,77 @@ pub trait Read {
+@@ -900,22 +883,52 @@ pub trait Read {
      ///     Ok(())
      /// }
      /// ```
@@ -1243,10 +1138,8 @@ index 14a16f3..07792b7 100644
      }
  }
  
-+#[cfg(feature="collections")]
 +pub struct IoVecBuffer<'a>(&'a [u8]);
 +
-+#[cfg(feature="collections")]
 +impl<'a> IoVecBuffer<'a> {
 +    #[inline]
 +    pub fn new(buf: &'a [u8]) -> IoVecBuffer<'a> {
@@ -1258,10 +1151,9 @@ index 14a16f3..07792b7 100644
 +        self.0
 +    }
 +}
-+#[cfg(feature="collections")]
++
 +pub struct IoVecMutBuffer<'a>(&'a mut [u8]);
 +
-+#[cfg(feature="collections")]
 +impl<'a> IoVecMutBuffer<'a> {
 +    #[inline]
 +    pub fn new(buf: &'a mut [u8]) -> IoVecMutBuffer<'a> {
@@ -1285,23 +1177,15 @@ index 14a16f3..07792b7 100644
  /// ABI compatible with the `iovec` type on Unix platforms and `WSABUF` on
  /// Windows.
 -#[unstable(feature = "iovec", issue = "58452")]
-+#[cfg(feature="collections")]
  #[repr(transparent)]
 -pub struct IoVecMut<'a>(sys::io::IoVecMut<'a>);
 +pub struct IoVecMut<'a>(IoVecMutBuffer<'a>);
  
 -#[unstable(feature = "iovec", issue = "58452")]
-+#[cfg(feature="collections")]
  impl<'a> fmt::Debug for IoVecMut<'a> {
      fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
          fmt::Debug::fmt(self.0.as_slice(), fmt)
-     }
- }
- 
-+#[cfg(feature="collections")]
- impl<'a> IoVecMut<'a> {
-     /// Creates a new `IoVecMut` wrapping a byte slice.
-     ///
+@@ -928,14 +941,12 @@ impl<'a> IoVecMut<'a> {
      /// # Panics
      ///
      /// Panics on Windows if the slice is larger than 4GB.
@@ -1314,41 +1198,31 @@ index 14a16f3..07792b7 100644
  }
  
 -#[unstable(feature = "iovec", issue = "58452")]
-+#[cfg(feature="collections")]
  impl<'a> Deref for IoVecMut<'a> {
      type Target = [u8];
  
-@@ -945,7 +966,7 @@ impl<'a> Deref for IoVecMut<'a> {
+@@ -945,7 +956,6 @@ impl<'a> Deref for IoVecMut<'a> {
      }
  }
  
 -#[unstable(feature = "iovec", issue = "58452")]
-+#[cfg(feature="collections")]
  impl<'a> DerefMut for IoVecMut<'a> {
      #[inline]
      fn deref_mut(&mut self) -> &mut [u8] {
-@@ -958,31 +979,31 @@ impl<'a> DerefMut for IoVecMut<'a> {
+@@ -958,11 +968,9 @@ impl<'a> DerefMut for IoVecMut<'a> {
  /// It is semantically a wrapper around an `&[u8]`, but is guaranteed to be
  /// ABI compatible with the `iovec` type on Unix platforms and `WSABUF` on
  /// Windows.
 -#[unstable(feature = "iovec", issue = "58452")]
-+#[cfg(feature="collections")]
  #[repr(transparent)]
 -pub struct IoVec<'a>(sys::io::IoVec<'a>);
 +pub struct IoVec<'a>(IoVecBuffer<'a>);
  
 -#[unstable(feature = "iovec", issue = "58452")]
-+#[cfg(feature="collections")]
  impl<'a> fmt::Debug for IoVec<'a> {
      fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
          fmt::Debug::fmt(self.0.as_slice(), fmt)
-     }
- }
- 
-+#[cfg(feature="collections")]
- impl<'a> IoVec<'a> {
-     /// Creates a new `IoVec` wrapping a byte slice.
-     ///
+@@ -975,14 +983,12 @@ impl<'a> IoVec<'a> {
      /// # Panics
      ///
      /// Panics on Windows if the slice is larger than 4GB.
@@ -1361,11 +1235,10 @@ index 14a16f3..07792b7 100644
  }
  
 -#[unstable(feature = "iovec", issue = "58452")]
-+#[cfg(feature="collections")]
  impl<'a> Deref for IoVec<'a> {
      type Target = [u8];
  
-@@ -993,13 +1014,11 @@ impl<'a> Deref for IoVec<'a> {
+@@ -993,13 +999,11 @@ impl<'a> Deref for IoVec<'a> {
  }
  
  /// A type used to conditionally initialize buffers passed to `Read` methods.
@@ -1379,7 +1252,7 @@ index 14a16f3..07792b7 100644
      #[inline]
      pub fn zeroing() -> Initializer {
          Initializer(true)
-@@ -1013,21 +1032,18 @@ impl Initializer {
+@@ -1013,21 +1017,18 @@ impl Initializer {
      /// read from buffers passed to `Read` methods, and that the return value of
      /// the method accurately reflects the number of bytes that have been
      /// written to the head of the buffer.
@@ -1401,7 +1274,7 @@ index 14a16f3..07792b7 100644
      #[inline]
      pub fn initialize(&self, buf: &mut [u8]) {
          if self.should_initialize() {
-@@ -1081,7 +1097,6 @@ impl Initializer {
+@@ -1081,7 +1082,6 @@ impl Initializer {
  /// `write` in a loop until its entire input has been written.
  ///
  /// [`write_all`]: #method.write_all
@@ -1409,7 +1282,7 @@ index 14a16f3..07792b7 100644
  #[doc(spotlight)]
  pub trait Write {
      /// Write a buffer into this writer, returning how many bytes were written.
-@@ -1130,7 +1145,6 @@ pub trait Write {
+@@ -1130,7 +1130,6 @@ pub trait Write {
      ///     Ok(())
      /// }
      /// ```
@@ -1417,16 +1290,15 @@ index 14a16f3..07792b7 100644
      fn write(&mut self, buf: &[u8]) -> Result<usize>;
  
      /// Like `write`, except that it writes from a slice of buffers.
-@@ -1141,7 +1155,7 @@ pub trait Write {
+@@ -1141,7 +1140,6 @@ pub trait Write {
      ///
      /// The default implementation calls `write` with either the first nonempty
      /// buffer provided, or an empty one if none exists.
 -    #[unstable(feature = "iovec", issue = "58452")]
-+    #[cfg(feature="collections")]
      fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> Result<usize> {
          default_write_vectored(|b| self.write(b), bufs)
      }
-@@ -1169,7 +1183,6 @@ pub trait Write {
+@@ -1169,7 +1167,6 @@ pub trait Write {
      ///     Ok(())
      /// }
      /// ```
@@ -1434,7 +1306,7 @@ index 14a16f3..07792b7 100644
      fn flush(&mut self) -> Result<()>;
  
      /// Attempts to write an entire buffer into this writer.
-@@ -1202,7 +1215,6 @@ pub trait Write {
+@@ -1202,7 +1199,6 @@ pub trait Write {
      ///     Ok(())
      /// }
      /// ```
@@ -1442,7 +1314,7 @@ index 14a16f3..07792b7 100644
      fn write_all(&mut self, mut buf: &[u8]) -> Result<()> {
          while !buf.is_empty() {
              match self.write(buf) {
-@@ -1254,7 +1266,6 @@ pub trait Write {
+@@ -1254,7 +1250,6 @@ pub trait Write {
      ///     Ok(())
      /// }
      /// ```
@@ -1450,7 +1322,7 @@ index 14a16f3..07792b7 100644
      fn write_fmt(&mut self, fmt: fmt::Arguments) -> Result<()> {
          // Create a shim which translates a Write to a fmt::Write and saves
          // off I/O errors. instead of discarding them
-@@ -1310,7 +1321,6 @@ pub trait Write {
+@@ -1310,7 +1305,6 @@ pub trait Write {
      ///     Ok(())
      /// }
      /// ```
@@ -1458,7 +1330,7 @@ index 14a16f3..07792b7 100644
      fn by_ref(&mut self) -> &mut Self where Self: Sized { self }
  }
  
-@@ -1340,7 +1350,6 @@ pub trait Write {
+@@ -1340,7 +1334,6 @@ pub trait Write {
  ///     Ok(())
  /// }
  /// ```
@@ -1466,7 +1338,7 @@ index 14a16f3..07792b7 100644
  pub trait Seek {
      /// Seek to an offset, in bytes, in a stream.
      ///
-@@ -1356,7 +1365,6 @@ pub trait Seek {
+@@ -1356,7 +1349,6 @@ pub trait Seek {
      /// Seeking to a negative offset is considered an error.
      ///
      /// [`SeekFrom::Start`]: enum.SeekFrom.html#variant.Start
@@ -1474,7 +1346,7 @@ index 14a16f3..07792b7 100644
      fn seek(&mut self, pos: SeekFrom) -> Result<u64>;
  
      /// Returns the length of this stream (in bytes).
-@@ -1394,7 +1402,6 @@ pub trait Seek {
+@@ -1394,7 +1386,6 @@ pub trait Seek {
      ///     Ok(())
      /// }
      /// ```
@@ -1482,7 +1354,7 @@ index 14a16f3..07792b7 100644
      fn stream_len(&mut self) -> Result<u64> {
          let old_pos = self.stream_position()?;
          let len = self.seek(SeekFrom::End(0))?;
-@@ -1433,7 +1440,6 @@ pub trait Seek {
+@@ -1433,7 +1424,6 @@ pub trait Seek {
      ///     Ok(())
      /// }
      /// ```
@@ -1490,7 +1362,7 @@ index 14a16f3..07792b7 100644
      fn stream_position(&mut self) -> Result<u64> {
          self.seek(SeekFrom::Current(0))
      }
-@@ -1445,29 +1451,26 @@ pub trait Seek {
+@@ -1445,29 +1435,26 @@ pub trait Seek {
  ///
  /// [`Seek`]: trait.Seek.html
  #[derive(Copy, PartialEq, Eq, Clone, Debug)]
@@ -1524,7 +1396,7 @@ index 14a16f3..07792b7 100644
  fn read_until<R: BufRead + ?Sized>(r: &mut R, delim: u8, buf: &mut Vec<u8>)
                                     -> Result<usize> {
      let mut read = 0;
-@@ -1547,7 +1550,7 @@ fn read_until<R: BufRead + ?Sized>(r: &mut R, delim: u8, buf: &mut Vec<u8>)
+@@ -1547,7 +1534,7 @@ fn read_until<R: BufRead + ?Sized>(r: &mut R, delim: u8, buf: &mut Vec<u8>)
  /// }
  /// ```
  ///
@@ -1533,7 +1405,7 @@ index 14a16f3..07792b7 100644
  pub trait BufRead: Read {
      /// Returns the contents of the internal buffer, filling it with more data
      /// from the inner reader if it is empty.
-@@ -1593,7 +1596,6 @@ pub trait BufRead: Read {
+@@ -1593,7 +1580,6 @@ pub trait BufRead: Read {
      /// // ensure the bytes we worked with aren't returned again later
      /// stdin.consume(length);
      /// ```
@@ -1541,7 +1413,7 @@ index 14a16f3..07792b7 100644
      fn fill_buf(&mut self) -> Result<&[u8]>;
  
      /// Tells this buffer that `amt` bytes have been consumed from the buffer,
-@@ -1615,7 +1617,6 @@ pub trait BufRead: Read {
+@@ -1615,7 +1601,6 @@ pub trait BufRead: Read {
      /// that method's example includes an example of `consume()`.
      ///
      /// [`fill_buf`]: #tymethod.fill_buf
@@ -1549,7 +1421,7 @@ index 14a16f3..07792b7 100644
      fn consume(&mut self, amt: usize);
  
      /// Read all bytes into `buf` until the delimiter `byte` or EOF is reached.
-@@ -1671,7 +1672,6 @@ pub trait BufRead: Read {
+@@ -1671,7 +1656,6 @@ pub trait BufRead: Read {
      /// assert_eq!(num_bytes, 0);
      /// assert_eq!(buf, b"");
      /// ```
@@ -1557,7 +1429,7 @@ index 14a16f3..07792b7 100644
      fn read_until(&mut self, byte: u8, buf: &mut Vec<u8>) -> Result<usize> {
          read_until(self, byte, buf)
      }
-@@ -1730,7 +1730,6 @@ pub trait BufRead: Read {
+@@ -1730,7 +1714,6 @@ pub trait BufRead: Read {
      /// assert_eq!(num_bytes, 0);
      /// assert_eq!(buf, "");
      /// ```
@@ -1565,7 +1437,7 @@ index 14a16f3..07792b7 100644
      fn read_line(&mut self, buf: &mut String) -> Result<usize> {
          // Note that we are not calling the `.read_until` method here, but
          // rather our hardcoded implementation. For more details as to why, see
-@@ -1771,7 +1770,6 @@ pub trait BufRead: Read {
+@@ -1771,7 +1754,6 @@ pub trait BufRead: Read {
      /// assert_eq!(split_iter.next(), Some(b"dolor".to_vec()));
      /// assert_eq!(split_iter.next(), None);
      /// ```
@@ -1573,7 +1445,7 @@ index 14a16f3..07792b7 100644
      fn split(self, byte: u8) -> Split<Self> where Self: Sized {
          Split { buf: self, delim: byte }
      }
-@@ -1810,7 +1808,6 @@ pub trait BufRead: Read {
+@@ -1810,7 +1792,6 @@ pub trait BufRead: Read {
      /// Each line of the iterator has the same error semantics as [`BufRead::read_line`].
      ///
      /// [`BufRead::read_line`]: trait.BufRead.html#method.read_line
@@ -1581,7 +1453,7 @@ index 14a16f3..07792b7 100644
      fn lines(self) -> Lines<Self> where Self: Sized {
          Lines { buf: self }
      }
-@@ -1822,7 +1819,6 @@ pub trait BufRead: Read {
+@@ -1822,7 +1803,6 @@ pub trait BufRead: Read {
  /// Please see the documentation of [`chain`] for more details.
  ///
  /// [`chain`]: trait.Read.html#method.chain
@@ -1589,7 +1461,7 @@ index 14a16f3..07792b7 100644
  pub struct Chain<T, U> {
      first: T,
      second: U,
-@@ -1848,7 +1844,6 @@ impl<T, U> Chain<T, U> {
+@@ -1848,7 +1828,6 @@ impl<T, U> Chain<T, U> {
      ///     Ok(())
      /// }
      /// ```
@@ -1597,7 +1469,7 @@ index 14a16f3..07792b7 100644
      pub fn into_inner(self) -> (T, U) {
          (self.first, self.second)
      }
-@@ -1871,7 +1866,6 @@ impl<T, U> Chain<T, U> {
+@@ -1871,7 +1850,6 @@ impl<T, U> Chain<T, U> {
      ///     Ok(())
      /// }
      /// ```
@@ -1605,7 +1477,7 @@ index 14a16f3..07792b7 100644
      pub fn get_ref(&self) -> (&T, &U) {
          (&self.first, &self.second)
      }
-@@ -1898,13 +1892,11 @@ impl<T, U> Chain<T, U> {
+@@ -1898,13 +1876,11 @@ impl<T, U> Chain<T, U> {
      ///     Ok(())
      /// }
      /// ```
@@ -1619,7 +1491,7 @@ index 14a16f3..07792b7 100644
  impl<T: fmt::Debug, U: fmt::Debug> fmt::Debug for Chain<T, U> {
      fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
          f.debug_struct("Chain")
-@@ -1914,7 +1906,6 @@ impl<T: fmt::Debug, U: fmt::Debug> fmt::Debug for Chain<T, U> {
+@@ -1914,7 +1890,6 @@ impl<T: fmt::Debug, U: fmt::Debug> fmt::Debug for Chain<T, U> {
      }
  }
  
@@ -1627,15 +1499,7 @@ index 14a16f3..07792b7 100644
  impl<T: Read, U: Read> Read for Chain<T, U> {
      fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
          if !self.done_first {
-@@ -1926,6 +1917,7 @@ impl<T: Read, U: Read> Read for Chain<T, U> {
-         self.second.read(buf)
-     }
- 
-+    #[cfg(feature="collections")]
-     fn read_vectored(&mut self, bufs: &mut [IoVecMut<'_>]) -> Result<usize> {
-         if !self.done_first {
-             match self.first.read_vectored(bufs)? {
-@@ -1946,7 +1938,7 @@ impl<T: Read, U: Read> Read for Chain<T, U> {
+@@ -1946,7 +1921,7 @@ impl<T: Read, U: Read> Read for Chain<T, U> {
      }
  }
  
@@ -1644,7 +1508,7 @@ index 14a16f3..07792b7 100644
  impl<T: BufRead, U: BufRead> BufRead for Chain<T, U> {
      fn fill_buf(&mut self) -> Result<&[u8]> {
          if !self.done_first {
-@@ -1973,7 +1965,6 @@ impl<T: BufRead, U: BufRead> BufRead for Chain<T, U> {
+@@ -1973,7 +1948,6 @@ impl<T: BufRead, U: BufRead> BufRead for Chain<T, U> {
  /// Please see the documentation of [`take`] for more details.
  ///
  /// [`take`]: trait.Read.html#method.take
@@ -1652,7 +1516,7 @@ index 14a16f3..07792b7 100644
  #[derive(Debug)]
  pub struct Take<T> {
      inner: T,
-@@ -2008,7 +1999,6 @@ impl<T> Take<T> {
+@@ -2008,7 +1982,6 @@ impl<T> Take<T> {
      ///     Ok(())
      /// }
      /// ```
@@ -1660,7 +1524,7 @@ index 14a16f3..07792b7 100644
      pub fn limit(&self) -> u64 { self.limit }
  
      /// Sets the number of bytes that can be read before this instance will
-@@ -2034,7 +2024,6 @@ impl<T> Take<T> {
+@@ -2034,7 +2007,6 @@ impl<T> Take<T> {
      ///     Ok(())
      /// }
      /// ```
@@ -1668,7 +1532,7 @@ index 14a16f3..07792b7 100644
      pub fn set_limit(&mut self, limit: u64) {
          self.limit = limit;
      }
-@@ -2059,7 +2048,6 @@ impl<T> Take<T> {
+@@ -2059,7 +2031,6 @@ impl<T> Take<T> {
      ///     Ok(())
      /// }
      /// ```
@@ -1676,7 +1540,7 @@ index 14a16f3..07792b7 100644
      pub fn into_inner(self) -> T {
          self.inner
      }
-@@ -2084,7 +2072,6 @@ impl<T> Take<T> {
+@@ -2084,7 +2055,6 @@ impl<T> Take<T> {
      ///     Ok(())
      /// }
      /// ```
@@ -1684,7 +1548,7 @@ index 14a16f3..07792b7 100644
      pub fn get_ref(&self) -> &T {
          &self.inner
      }
-@@ -2113,13 +2100,11 @@ impl<T> Take<T> {
+@@ -2113,13 +2083,11 @@ impl<T> Take<T> {
      ///     Ok(())
      /// }
      /// ```
@@ -1698,16 +1562,16 @@ index 14a16f3..07792b7 100644
  impl<T: Read> Read for Take<T> {
      fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
          // Don't call into inner reader at all at EOF because it may still block
-@@ -2136,15 +2121,9 @@ impl<T: Read> Read for Take<T> {
-     unsafe fn initializer(&self) -> Initializer {
+@@ -2137,6 +2105,7 @@ impl<T: Read> Read for Take<T> {
          self.inner.initializer()
      }
--
--    fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
--        let reservation_size = cmp::min(self.limit, 32) as usize;
--
--        read_to_end_with_reservation(self, buf, reservation_size)
--    }
+ 
++    #[cfg(feature="collections")]
+     fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
+         let reservation_size = cmp::min(self.limit, 32) as usize;
+ 
+@@ -2144,7 +2113,7 @@ impl<T: Read> Read for Take<T> {
+     }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
@@ -1715,7 +1579,7 @@ index 14a16f3..07792b7 100644
  impl<T: BufRead> BufRead for Take<T> {
      fn fill_buf(&mut self) -> Result<&[u8]> {
          // Don't call into inner reader at all at EOF because it may still block
-@@ -2171,13 +2150,11 @@ impl<T: BufRead> BufRead for Take<T> {
+@@ -2171,13 +2140,11 @@ impl<T: BufRead> BufRead for Take<T> {
  /// Please see the documentation of [`bytes`] for more details.
  ///
  /// [`bytes`]: trait.Read.html#method.bytes
@@ -1729,7 +1593,7 @@ index 14a16f3..07792b7 100644
  impl<R: Read> Iterator for Bytes<R> {
      type Item = Result<u8>;
  
-@@ -2201,14 +2178,14 @@ impl<R: Read> Iterator for Bytes<R> {
+@@ -2201,14 +2168,14 @@ impl<R: Read> Iterator for Bytes<R> {
  /// `BufRead`. Please see the documentation of `split()` for more details.
  ///
  /// [split]: trait.BufRead.html#method.split
@@ -1746,7 +1610,7 @@ index 14a16f3..07792b7 100644
  impl<B: BufRead> Iterator for Split<B> {
      type Item = Result<Vec<u8>>;
  
-@@ -2233,13 +2210,13 @@ impl<B: BufRead> Iterator for Split<B> {
+@@ -2233,13 +2200,13 @@ impl<B: BufRead> Iterator for Split<B> {
  /// `BufRead`. Please see the documentation of `lines()` for more details.
  ///
  /// [lines]: trait.BufRead.html#method.lines
@@ -1789,8 +1653,8 @@ index 6aaf8f1..447ce47 100644
 -use crate::io::{self, Read, Initializer, Write, ErrorKind, BufRead, IoVec, IoVecMut};
 -use crate::mem;
 +use core::fmt;
-+use crate::io::{self, Read, Initializer, Write, ErrorKind};
-+#[cfg(feature="collections")] use crate::io::{BufRead, IoVec, IoVecMut};
++use crate::io::{self, Read, Initializer, Write, ErrorKind, IoVec, IoVecMut};
++#[cfg(feature="collections")] use crate::io::BufRead;
 +use core::mem;
  
  /// Copies the entire contents of a reader into a writer.
@@ -1859,15 +1723,7 @@ index 6aaf8f1..447ce47 100644
  impl Read for Repeat {
      #[inline]
      fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-@@ -152,6 +146,7 @@ impl Read for Repeat {
-         Ok(buf.len())
-     }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn read_vectored(&mut self, bufs: &mut [IoVecMut<'_>]) -> io::Result<usize> {
-         let mut nwritten = 0;
-@@ -167,7 +162,6 @@ impl Read for Repeat {
+@@ -167,7 +161,6 @@ impl Read for Repeat {
      }
  }
  
@@ -1875,7 +1731,7 @@ index 6aaf8f1..447ce47 100644
  impl fmt::Debug for Repeat {
      fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
          f.pad("Repeat { .. }")
-@@ -180,7 +174,6 @@ impl fmt::Debug for Repeat {
+@@ -180,7 +173,6 @@ impl fmt::Debug for Repeat {
  /// see the documentation of `sink()` for more details.
  ///
  /// [sink]: fn.sink.html
@@ -1883,7 +1739,7 @@ index 6aaf8f1..447ce47 100644
  pub struct Sink { _priv: () }
  
  /// Creates an instance of a writer which will successfully consume all data.
-@@ -197,14 +190,13 @@ pub struct Sink { _priv: () }
+@@ -197,10 +189,8 @@ pub struct Sink { _priv: () }
  /// let num_bytes = io::sink().write(&buffer).unwrap();
  /// assert_eq!(num_bytes, 5);
  /// ```
@@ -1894,12 +1750,7 @@ index 6aaf8f1..447ce47 100644
  impl Write for Sink {
      #[inline]
      fn write(&mut self, buf: &[u8]) -> io::Result<usize> { Ok(buf.len()) }
- 
-+    #[cfg(feature="collections")]
-     #[inline]
-     fn write_vectored(&mut self, bufs: &[IoVec<'_>]) -> io::Result<usize> {
-         let total_len = bufs.iter().map(|b| b.len()).sum();
-@@ -215,7 +207,6 @@ impl Write for Sink {
+@@ -215,7 +205,6 @@ impl Write for Sink {
      fn flush(&mut self) -> io::Result<()> { Ok(()) }
  }
  

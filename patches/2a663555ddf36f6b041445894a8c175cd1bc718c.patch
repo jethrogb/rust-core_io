@@ -962,8 +962,8 @@ index 040669b..ee4d22c 100644
 +mod memchr;
 +#[cfg(all(feature="collections",core_memchr))]
 +use core::slice::memchr;
-+use core::ptr;
 +use core::slice;
++use core::ptr;
 +
 +#[cfg(feature="collections")] pub use self::buffered::{BufReader, BufWriter, LineWriter};
 +#[cfg(feature="collections")] pub use self::buffered::IntoInnerError;
@@ -1404,16 +1404,16 @@ index 040669b..ee4d22c 100644
  impl<T: Read> Read for Take<T> {
      fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
          // Don't call into inner reader at all at EOF because it may still block
-@@ -1898,15 +1847,9 @@ impl<T: Read> Read for Take<T> {
-     unsafe fn initializer(&self) -> Initializer {
+@@ -1899,6 +1848,7 @@ impl<T: Read> Read for Take<T> {
          self.inner.initializer()
      }
--
--    fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
--        let reservation_size = cmp::min(self.limit, 32) as usize;
--
--        read_to_end_with_reservation(self, buf, reservation_size)
--    }
+ 
++    #[cfg(feature="collections")]
+     fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
+         let reservation_size = cmp::min(self.limit, 32) as usize;
+ 
+@@ -1906,7 +1856,7 @@ impl<T: Read> Read for Take<T> {
+     }
  }
  
 -#[stable(feature = "rust1", since = "1.0.0")]
@@ -1421,7 +1421,7 @@ index 040669b..ee4d22c 100644
  impl<T: BufRead> BufRead for Take<T> {
      fn fill_buf(&mut self) -> Result<&[u8]> {
          // Don't call into inner reader at all at EOF because it may still block
-@@ -1933,13 +1876,11 @@ impl<T: BufRead> BufRead for Take<T> {
+@@ -1933,13 +1883,11 @@ impl<T: BufRead> BufRead for Take<T> {
  /// Please see the documentation of [`bytes`] for more details.
  ///
  /// [`bytes`]: trait.Read.html#method.bytes
@@ -1435,7 +1435,7 @@ index 040669b..ee4d22c 100644
  impl<R: Read> Iterator for Bytes<R> {
      type Item = Result<u8>;
  
-@@ -1963,14 +1904,14 @@ impl<R: Read> Iterator for Bytes<R> {
+@@ -1963,14 +1911,14 @@ impl<R: Read> Iterator for Bytes<R> {
  /// `BufRead`. Please see the documentation of `split()` for more details.
  ///
  /// [split]: trait.BufRead.html#method.split
@@ -1452,7 +1452,7 @@ index 040669b..ee4d22c 100644
  impl<B: BufRead> Iterator for Split<B> {
      type Item = Result<Vec<u8>>;
  
-@@ -1995,13 +1936,13 @@ impl<B: BufRead> Iterator for Split<B> {
+@@ -1995,13 +1943,13 @@ impl<B: BufRead> Iterator for Split<B> {
  /// `BufRead`. Please see the documentation of `lines()` for more details.
  ///
  /// [lines]: trait.BufRead.html#method.lines
@@ -1496,8 +1496,8 @@ index 8df961a..2b08122 100644
 -use mem;
 +use core::fmt;
 +use io::{self, Read, Initializer, Write, ErrorKind};
-+use core::mem;
 +#[cfg(feature="collections")] use io::BufRead;
++use core::mem;
  
  /// Copies the entire contents of a reader into a writer.
  ///
