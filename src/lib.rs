@@ -3,9 +3,14 @@
 //! the [std documentation](https://doc.rust-lang.org/nightly/std/io/index.html)
 //! for a full description of the functionality.
 #![allow(stable_features,unused_features)]
-#![feature(question_mark,const_fn,collections,alloc,unicode,copy_from_slice,
-	str_char,try_from,str_internals,align_offset,doc_spotlight,
-	slice_internals,non_exhaustive,bind_by_move_pattern_guards)]
+#![feature(question_mark,const_fn,copy_from_slice,try_from,str_internals,align_offset,
+       doc_spotlight,slice_internals)]
+#![cfg_attr(any(feature="alloc",feature="collections"),feature(alloc))]
+#![cfg_attr(pattern_guards,feature(bind_by_move_pattern_guards,nll))]
+#![cfg_attr(not(no_collections),feature(collections))]
+#![cfg_attr(non_exhaustive,feature(non_exhaustive))]
+#![cfg_attr(unicode,feature(str_char))]
+#![cfg_attr(unicode,feature(unicode))]
 #![no_std]
 
 #[cfg_attr(feature="collections",macro_use)]
