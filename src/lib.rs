@@ -7,9 +7,9 @@
        doc_spotlight,slice_internals)]
 #![cfg_attr(any(feature="alloc",feature="collections"),feature(alloc))]
 #![cfg_attr(pattern_guards,feature(bind_by_move_pattern_guards,nll))]
-#![cfg_attr(collections,feature(collections))]
+#![cfg_attr(not(no_collections),feature(collections))]
 #![cfg_attr(non_exhaustive,feature(non_exhaustive))]
-#![cfg_attr(str_char,feature(str_char))]
+#![cfg_attr(unicode,feature(str_char))]
 #![cfg_attr(unicode,feature(unicode))]
 #![no_std]
 

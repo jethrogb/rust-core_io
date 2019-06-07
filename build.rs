@@ -54,8 +54,6 @@ type ConditionalCfg = (Cfg, &'static [(Date, Cfg)]);
 const CONDITIONAL_CFGS: &'static [ConditionalCfg] = &[
 	(None, &[("2019-02-24", Some("pattern_guards"))]),
 	(None, &[("2018-08-14", Some("non_exhaustive"))]),
-	(Some("collections"), &[("2018-08-13", None)]),
-	(Some("str_char"), &[("2018-08-13", None)]),
 	(Some("unicode"), &[("2018-08-13", None)]),
 	(None, &[("2018-01-01", Some("core_memchr"))]),
 	(None, &[("2017-06-15", Some("no_collections"))]),
