@@ -2023,9 +2023,8 @@ diff --git a/util.rs b/util.rs
 index b09161b..4b481c8 100644
 --- a/util.rs
 +++ b/util.rs
-@@ -1,8 +1,11 @@
+@@ -1,8 +1,10 @@
  #![allow(missing_copy_implementations)]
-+#![allow(deprecated)]
  
 -use crate::fmt;
 -use crate::io::{self, BufRead, ErrorKind, Initializer, IoSlice, IoSliceMut, Read, Write};
@@ -2038,7 +2037,7 @@ index b09161b..4b481c8 100644
  
  /// Copies the entire contents of a reader into a writer.
  ///
-@@ -39,31 +42,26 @@ use crate::mem::MaybeUninit;
+@@ -39,31 +42,27 @@ use crate::mem::MaybeUninit;
  ///     Ok(())
  /// }
  /// ```
@@ -2058,6 +2057,7 @@ index b09161b..4b481c8 100644
 -        reader.initializer().initialize(buf.get_mut());
 -    }
 +    let mut buf = unsafe {
++        #[allow(deprecated)]
 +        let mut buf: [u8; super::DEFAULT_BUF_SIZE] = mem::uninitialized();
 +        reader.initializer().initialize(&mut buf);
 +        buf
