@@ -1,7 +1,7 @@
 [package]
 name = "core_io"
-version = "0.1.20190701"
-authors = ["The Rust Project Developers", "Jethro Beekman"]
+version = "0.1.20191201"
+authors = ["The Rust Project Developers", "Jethro Beekman", "Scott Mabin"]
 license = "MIT/Apache-2.0"
 description = """
 This is a copy of libstd::io with all the parts that don't work in core removed.

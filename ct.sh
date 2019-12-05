@@ -21,6 +21,7 @@ RUST_VERSIONS=$(awk '{print $1}' <<EOF
     nightly-2018-08-15 # edge case: non_exhaustive feature
     nightly-2019-02-25 # edge case: bind_by_move_pattern_guards feature
     nightly-2019-07-01 # core_io release
+    nightly-2019-12-01 # core_io release
 EOF
 )
 
