@@ -12,7 +12,7 @@ version of the source that corresponds to your compiler version will be
 selected automatically by the build script.
 """
 repository = "https://github.com/jethrogb/rust-core_io"
-documentation = "https://doc.rust-lang.org/nightly/std/io/index.html"
+documentation = "https://docs.rs/core_io"
 keywords = ["core", "no_std", "io", "read", "write"]
 include = [
 	"build.rs",
