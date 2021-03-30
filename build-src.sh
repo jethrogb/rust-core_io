@@ -68,12 +68,4 @@ for IO_COMMIT in $OLD_COMMITS $(git_commits_ordered %H $NEW_COMMITS|tac); do
 	fi
 done
 
-if [ $(uname) == 'Darwin' ]; then
-	OLD_GIT_PERM=$(stat -f %Op .git)
-else
-	OLD_GIT_PERM=$(stat --printf=%a .git)
-fi
-trap "chmod $OLD_GIT_PERM .git; exit 1" SIGINT
-chmod 000 .git
-cargo ${1:-package}
-chmod $OLD_GIT_PERM .git
+cargo ${1:-package} --allow-dirty
