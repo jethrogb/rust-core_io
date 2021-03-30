@@ -26,7 +26,7 @@ echo_lines() {
 
 get_io_commits() {
 	for COMPILER_COMMIT in $COMPILER_COMMITS; do
-		IO_COMMIT=$(git log -n1 --pretty=format:%H $COMPILER_COMMIT -- src/libstd/io)
+		IO_COMMIT=$(git log -n1 --pretty=format:%H $COMPILER_COMMIT -- src/libstd/io library/std/src/io)
 		if ! grep -q $COMPILER_COMMIT mapping.rs; then
 			echo "-Mapping(\"$COMPILER_COMMIT\",\"$IO_COMMIT\")" >> mapping.rs
 		fi
@@ -40,8 +40,14 @@ get_patch_commits() {
 
 prepare_version() {
 	mkdir src/$IO_COMMIT
-	git_extract src/libstd/io/
-	if git_file_exists src/libcore/slice/memchr.rs; then
+	if git_file_exists library/std/src/io/mod.rs; then
+		git_extract library/std/src/io/
+	else
+		git_extract src/libstd/io/
+	fi
+	if git_file_exists library/core/src/slice/memchr.rs; then
+		true
+	elif git_file_exists src/libcore/slice/memchr.rs; then
 		true
 	elif git_file_exists src/libstd/sys_common/memchr.rs; then
 		git_extract src/libstd/sys_common/memchr.rs
@@ -84,6 +90,6 @@ bash_diff_loop() {
 					;;
 			esac
 		done
-		bash <> /dev/stderr
+		bash --rcfile <(custom_bashrc) <> /dev/stderr
 	done
 }

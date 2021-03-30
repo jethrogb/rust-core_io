@@ -12,7 +12,7 @@ fn parse_mappings(mut mappings: &'static str) -> Vec<Mapping> {
 	// is why it's kind of weird. It should be changed to a saner format.
 
 	const P1: &'static str = r#"-Mapping(""#;
-	const P2: &'static str = r#"",""#; ;
+	const P2: &'static str = r#"",""#;
 	const P3: &'static str = "\")\n";
 
 	trait TakePrefix: Sized {

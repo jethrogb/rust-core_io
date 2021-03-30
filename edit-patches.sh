@@ -25,6 +25,7 @@ prompt_changes() {
 	bold_arrow; echo "Replacing $IO_COMMIT.patch with updated version"
 	git diff > $TMP_PATCH
 	git clean -f -x
+	git reset -q HEAD~
 	git diff > $PATCH_DIR/$IO_COMMIT.patch
 	rm -rf .git
 }
