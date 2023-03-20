@@ -1,3 +1,7 @@
+# INTENT TO ARCHIVE
+
+This repository will be archived in the near future. Discussion at https://github.com/jethrogb/rust-core_io/issues/38
+
 # core_io
 
 [![Build Status](https://travis-ci.com/jethrogb/rust-core_io.svg?branch=master)](https://travis-ci.com/jethrogb/rust-core_io)
